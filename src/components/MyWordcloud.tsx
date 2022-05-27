@@ -10,23 +10,28 @@ type Word = {
 	word: string,
 	pos: string,
 }
+type WordFreqMap = Map<string, number>
 
 const words2freq = (words: Word[]) => {
-	const freq: { [word: string]: number } = {};
+	const freq: WordFreqMap = new Map();
 	words.forEach(({word}) => {
-		if (freq[word]) {
-			freq[word]++;
+		if (freq.has(word)) {
+			freq.set(word, freq.get(word)! + 1)
+				
 		} else {
-			freq[word] = 1;
+			freq.set(word, 1)
 		}
 	});
 	return freq;
 }
-const freq2array = (freq: { [word: string]: number }, freq_map:(f:number)=>number=(f=>f)) => {
+const freq2array = (freq: WordFreqMap, freq_map:(f:number)=>number=(f=>f)) => {
 	const arr: { text: string, value: number }[] = [];
-	for (const word in freq) {
-		arr.push({ text: word, value: freq_map(freq[word]) });
-	}
+	freq.forEach((value, key) => {
+		arr.push({
+			text: key,
+			value: freq_map(value)
+		})
+	})
 	return arr;
 }
 
@@ -84,7 +89,7 @@ const WordClassFilter = (prop:{
 	</>)
 }
 const WordLengthFilter = (prop:{
-	words: string[],
+	words: Word[],
 	onResult:(result:{min:number,max:number})=>void
 }) => {
 	const {words, onResult} = prop
@@ -94,8 +99,8 @@ const WordLengthFilter = (prop:{
 	const [max, setMax] = React.useState(maxBound)
 	const words2 = words.map(w=>w)
 	React.useEffect(() => {
-		setMinBound(Math.min(...words.map(w => w.length)))
-		setMaxBound(Math.max(...words.map(w => w.length)))
+		setMinBound(Math.min(...words.map(({word}) => word.length)))
+		setMaxBound(Math.max(...words.map(({word}) => word.length)))
 	}, [words2])
 	const handleChange = React.useCallback(([min, max]) => {
 		setMin(min)
@@ -104,6 +109,7 @@ const WordLengthFilter = (prop:{
 	}, [onResult])
 	return (<>
 		<div>
+			length filter
 			<span>{minBound}</span>
 			<Slider range
 				allowCross={false}
@@ -119,7 +125,47 @@ const WordLengthFilter = (prop:{
 			<span>{`min:${min}, max:${max}`}</span>
 		</div>
 	</>);
-}	
+}
+const WordFreqFilter = (prop:{
+	words: Word[],
+	onResult:(result:{min:number,max:number})=>void
+}) => {
+	const {words, onResult} = prop
+	const [minBound, setMinBound] = React.useState(1)
+	const [maxBound, setMaxBound] = React.useState(10)
+	const [min, setMin] = React.useState(minBound)
+	const [max, setMax] = React.useState(maxBound)
+	const words2 = words.map(w=>w)
+	React.useEffect(() => {
+		const freq = words2freq(words2)
+		setMinBound(Math.min(...freq.values()))
+		setMaxBound(Math.max(...freq.values()))
+	}, [words2])
+	const handleChange = React.useCallback(([min, max]) => {
+		setMin(min)
+		setMax(max)
+		onResult({min, max})
+	}, [onResult])
+	return (<>
+		<div>
+			freq filter
+			<span>{minBound}</span>
+			<Slider range
+				allowCross={false}
+				min={minBound}
+				max={maxBound}
+				defaultValue={[minBound, maxBound]}
+				draggableTrack
+				onChange={handleChange}
+			/>
+			<span>{maxBound}</span>
+		</div>
+		<div>
+			<span>{`min:${min}, max:${max}`}
+			</span>
+		</div>
+	</>);
+}
 const MyWordcloud = ({text}:{text:string}) => {
 	const [useTokenizer, setUseTokenizer] = React.useState(false);
 	const [data, setData] = React.useState<{
@@ -132,12 +178,19 @@ const MyWordcloud = ({text}:{text:string}) => {
 		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
 	}, [setClassFilter])
 	const [lengthFilter, setLengthFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
+	const [freqFilter, setFreqFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
 	React.useEffect(() => {
 		const filterdWords = words
 		.filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
 		.filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
-		setData(freq2array(words2freq(filterdWords), f=>f*100))
-	}, [useTokenizer, classFilter, lengthFilter, words])
+
+		const freq:WordFreqMap = words2freq(filterdWords);
+		[...freq.entries()]
+		.filter(([,v]) => v<freqFilter.min || v>freqFilter.max)
+		.forEach(([k,v]) => freq.delete(k))
+		
+		setData(freq2array(freq, f=>f*100))
+	}, [words, classFilter, lengthFilter, freqFilter, useTokenizer])
 	React.useEffect(() => {
 		const doTokenize = async () => {
 			tokenize(text.replace(/\s/g, ''))
@@ -172,8 +225,12 @@ const MyWordcloud = ({text}:{text:string}) => {
 			/>
 		</div>
 		<WordLengthFilter
-			words={words.map(w => w.word)}
+			words={words}
 			onResult={setLengthFilter}
+		/>
+		<WordFreqFilter
+			words={words}
+			onResult={setFreqFilter}
 		/>
 		<Wordcloud
 			data={data}
