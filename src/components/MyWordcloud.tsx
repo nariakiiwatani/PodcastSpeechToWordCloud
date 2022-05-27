@@ -1,6 +1,8 @@
 import React from 'react';
 import Wordcloud from 'react-d3-cloud';
 import {tokenize, getTokenizer} from "kuromojin";
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css';
 
 getTokenizer({dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"})
 
@@ -77,6 +79,42 @@ const WordClassFilter = (prop:{
 		</label>)}
 	</>)
 }
+const WordLengthFilter = (prop:{
+	words: string[],
+	onResult:(result:{min:number,max:number})=>void
+}) => {
+	const {words, onResult} = prop
+	const [minBound, setMinBound] = React.useState(1)
+	const [maxBound, setMaxBound] = React.useState(10)
+	const [min, setMin] = React.useState(minBound)
+	const [max, setMax] = React.useState(maxBound)
+	React.useEffect(() => {
+		setMinBound(Math.min(...words.map(w => w.length)))
+		setMaxBound(Math.max(...words.map(w => w.length)))
+	}, [words.length])
+	const handleChange = React.useCallback(([min, max]) => {
+		setMin(min)
+		setMax(max)
+		onResult({min, max})
+	}, [onResult])
+	return (<>
+		<div>
+			<span>{minBound}</span>
+			<Slider range
+				allowCross={false}
+				min={minBound}
+				max={maxBound}
+				defaultValue={[minBound, maxBound]}
+				draggableTrack
+				onChange={handleChange}
+			/>
+			<span>{maxBound}</span>
+		</div>
+		<div>
+			<span>{`min:${min}, max:${max}`}</span>
+		</div>
+	</>);
+}	
 const MyWordcloud = ({text}:{text:string}) => {
 	const [useTokenizer, setUseTokenizer] = React.useState(false);
 	const [data, setData] = React.useState<{
@@ -88,10 +126,16 @@ const MyWordcloud = ({text}:{text:string}) => {
 	const updateClassFilter = React.useCallback((result:Map<string,boolean>) => {
 		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
 	}, [setClassFilter])
+	const [lengthFilter, setLengthFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
 	React.useEffect(() => {
-		const filterFunc = useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true
-		setData(freq2array(words2freq(words.filter(filterFunc)), f=>f*100))
-	}, [useTokenizer, classFilter, words])
+
+	}, [words])
+	React.useEffect(() => {
+		const filterdWords = words
+		.filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
+		.filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
+		setData(freq2array(words2freq(filterdWords), f=>f*100))
+	}, [useTokenizer, classFilter, lengthFilter, words])
 	React.useEffect(() => {
 		const doTokenize = async () => {
 			tokenize(text.replace(/\s/g, ''))
@@ -125,6 +169,10 @@ const MyWordcloud = ({text}:{text:string}) => {
 				onResult={updateClassFilter}
 			/>
 		</div>
+		<WordLengthFilter
+			words={words.map(w => w.word)}
+			onResult={setLengthFilter}
+		/>
 		<Wordcloud
 			data={data}
 		/>
