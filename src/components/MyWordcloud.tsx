@@ -4,9 +4,14 @@ import {tokenize, getTokenizer} from "kuromojin";
 
 getTokenizer({dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"})
 
-const words2freq = (words: string[]) => {
+type Word = {
+	word: string,
+	pos: string,
+}
+
+const words2freq = (words: Word[]) => {
 	const freq: { [word: string]: number } = {};
-	words.forEach(word => {
+	words.forEach(({word}) => {
 		if (freq[word]) {
 			freq[word]++;
 		} else {
@@ -22,31 +27,88 @@ const freq2array = (freq: { [word: string]: number }, freq_map:(f:number)=>numbe
 	}
 	return arr;
 }
+
+const WordClassFilter = (prop:{
+	classes: string[],
+	default_value:boolean,
+	onResult:(result:Map<string,boolean>)=>void
+}) => {
+	const {classes, default_value, onResult} = prop
+	const [filter, setFilter] = React.useState(new Map<string,boolean>())
+	const [count, setCount] = React.useState(new Map<string,number>())
+	const updateFilter = React.useCallback((pos:string, value:boolean) => {
+		const new_filter = new Map<string,boolean>(filter)
+		new_filter.set(pos, value)
+		setFilter(new_filter)
+		onResult(new_filter)
+	}, [filter, onResult])
+	
+	React.useEffect(() => {
+		setCount(() => {
+			const count = new Map<string,number>()
+			classes.forEach(c => {
+				if (count.has(c)) {
+					count.set(c, count.get(c) + 1)
+				} else {
+					count.set(c, 1)
+				}
+			})
+			return count
+		})
+	}, [classes])
+	React.useEffect(() => {
+		setFilter(filter => {
+			const map = new Map<string,boolean>(filter)
+			classes.forEach(c => {
+				if(!map.has(c)) {
+					map.set(c, default_value)
+				}
+			})
+			return map
+		})
+	}, [classes])
+	return(<>
+		{[...count.entries()].filter(([k,v])=>v>0).map(([k,v]) => <label key={k}>
+			<input type="checkbox"
+				checked={filter.get(k)}
+				onChange={e => updateFilter(k, e.target.checked)}
+			/>
+			{`${k} (${count.get(k)})`}
+		</label>)}
+	</>)
+}
 const MyWordcloud = ({text}:{text:string}) => {
 	const [useTokenizer, setUseTokenizer] = React.useState(false);
 	const [data, setData] = React.useState<{
 		text: string;
 		value: number;
 	}[]>([]);
+	const [words, setWords] = React.useState<Word[]>([]);
+	const [classFilter, setClassFilter] = React.useState<string[]>(['*']);
+	const updateClassFilter = React.useCallback((result:Map<string,boolean>) => {
+		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
+	}, [setClassFilter])
 	React.useEffect(() => {
-		const doSync = (words:string[]) => {
-			const freq = words2freq(words);
-			const arr = freq2array(freq, f=>f*100);
-			setData(arr);
-		}
-		const doAsync = async () => {
+		const filterFunc = useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true
+		setData(freq2array(words2freq(words.filter(filterFunc)), f=>f*100))
+	}, [useTokenizer, classFilter, words])
+	React.useEffect(() => {
+		const doTokenize = async () => {
 			tokenize(text.replace(/\s/g, ''))
 			.then(res => {
-				const words = res.filter(r => ["名詞","動詞","形容詞","副詞"].indexOf(r.pos) >= 0).map(r => r.basic_form);
+				const words = res.map(r => ({
+					word: r.basic_form,
+					pos: r.pos
+				}));
 				return words
 			})
-			.then(doSync)
+			.then(setWords)
 		}
 		if(useTokenizer) {
-			doAsync()
+			doTokenize()
 		}
 		else {
-			doSync(text.split(' '))
+			setWords(text.split(' ').map(w => ({word: w, pos: '*'})))
 		}
 	}, [text, useTokenizer])
 	return (<>
@@ -56,6 +118,13 @@ const MyWordcloud = ({text}:{text:string}) => {
 			name='useTokenizer'
 		/>
 		<label htmlFor='useTokenizer'>use tokenizer</label>
+		<div style={{display: useTokenizer?'block':'none'}}>
+			<WordClassFilter
+				classes={words.filter(({pos})=>pos!=='*').map(w => w.pos)}
+				default_value={false}
+				onResult={updateClassFilter}
+			/>
+		</div>
 		<Wordcloud
 			data={data}
 		/>
