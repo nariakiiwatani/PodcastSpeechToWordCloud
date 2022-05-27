@@ -31,11 +31,11 @@ const freq2array = (freq: { [word: string]: number }, freq_map:(f:number)=>numbe
 }
 
 const WordClassFilter = (prop:{
-	classes: string[],
+	words: Word[],
 	default_value:boolean,
 	onResult:(result:Map<string,boolean>)=>void
 }) => {
-	const {classes, default_value, onResult} = prop
+	const {words, default_value, onResult} = prop
 	const [filter, setFilter] = React.useState(new Map<string,boolean>())
 	const [count, setCount] = React.useState(new Map<string,number>())
 	const updateFilter = React.useCallback((pos:string, value:boolean) => {
@@ -47,28 +47,32 @@ const WordClassFilter = (prop:{
 	
 	React.useEffect(() => {
 		setCount(() => {
-			const count = new Map<string,number>()
-			classes.forEach(c => {
-				if (count.has(c)) {
-					count.set(c, count.get(c) + 1)
+			const sorted = new Map<string,Set<string>>()
+			words.forEach(({word,pos}) => {
+				if (sorted.has(pos)) {
+					sorted.get(pos).add(word)
 				} else {
-					count.set(c, 1)
+					sorted.set(pos, new Set([word]))
 				}
+			})
+			const count = new Map<string,number>()
+			sorted.forEach((set, pos) => {
+				count.set(pos, set.size)
 			})
 			return count
 		})
-	}, [classes])
+	}, [words])
 	React.useEffect(() => {
 		setFilter(filter => {
 			const map = new Map<string,boolean>(filter)
-			classes.forEach(c => {
-				if(!map.has(c)) {
-					map.set(c, default_value)
+			words.forEach(({pos}) => {
+				if(!map.has(pos)) {
+					map.set(pos, default_value)
 				}
 			})
 			return map
 		})
-	}, [classes])
+	}, [words])
 	return(<>
 		{[...count.entries()].filter(([k,v])=>v>0).map(([k,v]) => <label key={k}>
 			<input type="checkbox"
@@ -88,10 +92,11 @@ const WordLengthFilter = (prop:{
 	const [maxBound, setMaxBound] = React.useState(10)
 	const [min, setMin] = React.useState(minBound)
 	const [max, setMax] = React.useState(maxBound)
+	const words2 = words.map(w=>w)
 	React.useEffect(() => {
 		setMinBound(Math.min(...words.map(w => w.length)))
 		setMaxBound(Math.max(...words.map(w => w.length)))
-	}, [words.length])
+	}, [words2])
 	const handleChange = React.useCallback(([min, max]) => {
 		setMin(min)
 		setMax(max)
@@ -128,9 +133,6 @@ const MyWordcloud = ({text}:{text:string}) => {
 	}, [setClassFilter])
 	const [lengthFilter, setLengthFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
 	React.useEffect(() => {
-
-	}, [words])
-	React.useEffect(() => {
 		const filterdWords = words
 		.filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
 		.filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
@@ -152,7 +154,7 @@ const MyWordcloud = ({text}:{text:string}) => {
 			doTokenize()
 		}
 		else {
-			setWords(text.split(' ').map(w => ({word: w, pos: '*'})))
+			setWords(text.replace(/\s/g, '\n').split('\n').map(w => ({word: w, pos: '*'})))
 		}
 	}, [text, useTokenizer])
 	return (<>
@@ -164,7 +166,7 @@ const MyWordcloud = ({text}:{text:string}) => {
 		<label htmlFor='useTokenizer'>use tokenizer</label>
 		<div style={{display: useTokenizer?'block':'none'}}>
 			<WordClassFilter
-				classes={words.filter(({pos})=>pos!=='*').map(w => w.pos)}
+				words={words.filter(({pos})=>pos!=='*')}
 				default_value={false}
 				onResult={updateClassFilter}
 			/>
