@@ -1,15 +1,13 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import Wordcloud from 'react-d3-cloud';
 import {tokenize, getTokenizer} from "kuromojin";
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
+import { Word } from '../libs/Words';
+import { useFreqFilter } from '../libs/WordFilter';
 
 getTokenizer({dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"})
 
-type Word = {
-	word: string,
-	pos: string,
-}
 type WordFreqMap = Map<string, number>
 
 const words2freq = (words: Word[]) => {
@@ -128,40 +126,29 @@ const WordLengthFilter = (prop:{
 }
 const WordFreqFilter = (prop:{
 	words: Word[],
-	onResult:(result:{min:number,max:number})=>void
+	onResult:(words: Word[])=>void
 }) => {
-	const {words, onResult} = prop
-	const [minBound, setMinBound] = React.useState(1)
-	const [maxBound, setMaxBound] = React.useState(10)
-	const [min, setMin] = React.useState(minBound)
-	const [max, setMax] = React.useState(maxBound)
-	const words2 = words.map(w=>w)
-	React.useEffect(() => {
-		const freq = words2freq(words2)
-		setMinBound(Math.min(...freq.values()))
-		setMaxBound(Math.max(...freq.values()))
-	}, [words2])
+	const { words:filteredWords, bounds, range, setRange } = useFreqFilter(prop.words)
 	const handleChange = React.useCallback(([min, max]) => {
-		setMin(min)
-		setMax(max)
-		onResult({min, max})
-	}, [onResult])
+		setRange({min, max})
+	}, [setRange])
+	useEffect(() => {
+		prop.onResult(filteredWords)
+	}, [filteredWords, prop.onResult])
 	return (<>
 		<div>
-			freq filter
-			<span>{minBound}</span>
+			freq filter{`(${bounds.min}, ${bounds.max})`}
 			<Slider range
-				allowCross={false}
-				min={minBound}
-				max={maxBound}
-				defaultValue={[minBound, maxBound]}
+				allowCross={true}
+				min={bounds.min}
+				max={bounds.max}
+				defaultValue={[bounds.min, bounds.max]}
 				draggableTrack
 				onChange={handleChange}
 			/>
-			<span>{maxBound}</span>
 		</div>
 		<div>
-			<span>{`min:${min}, max:${max}`}
+			<span>{`min:${range.min}, max:${range.max}`}
 			</span>
 		</div>
 	</>);
@@ -172,25 +159,22 @@ const MyWordcloud = ({text}:{text:string}) => {
 		text: string;
 		value: number;
 	}[]>([]);
-	const [words, setWords] = React.useState<Word[]>([]);
+	const [words, setWords] = React.useState<Word[]>([]);	
+	const [filteredWords, setFilteredWords] = React.useState<Word[]>([]);	
 	const [classFilter, setClassFilter] = React.useState<string[]>(['*']);
 	const updateClassFilter = React.useCallback((result:Map<string,boolean>) => {
 		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
 	}, [setClassFilter])
 	const [lengthFilter, setLengthFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
 	const [freqFilter, setFreqFilter] = React.useState<{min:number,max:number}>({min:1,max:10})
-	React.useEffect(() => {
-		const filterdWords = words
-		.filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
-		.filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
+	useEffect(() => {
+		// const filterdWords = words
+		// .filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
+		// .filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
 
-		const freq:WordFreqMap = words2freq(filterdWords);
-		[...freq.entries()]
-		.filter(([,v]) => v<freqFilter.min || v>freqFilter.max)
-		.forEach(([k,v]) => freq.delete(k))
-		
+		const freq:WordFreqMap = words2freq(filteredWords);
 		setData(freq2array(freq, f=>f*100))
-	}, [words, classFilter, lengthFilter, freqFilter, useTokenizer])
+	}, [filteredWords])
 	React.useEffect(() => {
 		const doTokenize = async () => {
 			tokenize(text.replace(/\s/g, ''))
@@ -207,9 +191,14 @@ const MyWordcloud = ({text}:{text:string}) => {
 			doTokenize()
 		}
 		else {
-			setWords(text.replace(/\s/g, '\n').split('\n').map(w => ({word: w, pos: '*'})))
+			setWords(text.replace(/\s/g, '\n').split('\n').filter(t=>t.length).map(w => ({word: w, pos: '*'})))
 		}
 	}, [text, useTokenizer])
+
+	const handleFreqFilterResult = useCallback((newWords:Word[]) => {
+		setFilteredWords(newWords)
+		console.info({words, filteredWords})
+	}, [words])
 	return (<>
 		<input type='checkbox'
 			checked={useTokenizer}
@@ -230,7 +219,7 @@ const MyWordcloud = ({text}:{text:string}) => {
 		/>
 		<WordFreqFilter
 			words={words}
-			onResult={setFreqFilter}
+			onResult={handleFreqFilterResult}
 		/>
 		<Wordcloud
 			data={data}
