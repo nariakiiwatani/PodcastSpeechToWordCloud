@@ -4,19 +4,18 @@ export interface Word {
 	pos: string;
 }
 
-export interface WordFreq {
-	word: Word;
-	value: number;
+export interface ScoredWord extends Word {
+	score: number;
 }
 
-export const calcWordFreq = (words: Word[]): WordFreq[] => {
-	const freq = new Array<WordFreq>();
+export const calcWordFreq = (words: Word[]): ScoredWord[] => {
+	const freq = new Array<ScoredWord>();
 	words.forEach(word => {
-		const found = freq.find(({word:w}) => w.word === word.word && w.pos === word.pos)
+		const found = freq.find(w => w.word === word.word && w.pos === word.pos)
 		if(found) {
-			found.value++;
+			found.score++;
 		} else {
-			freq.push({word, value: 1});
+			freq.push({...word, score: 1});
 		}
 	})
 	return freq;

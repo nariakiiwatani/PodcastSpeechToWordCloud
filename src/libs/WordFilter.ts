@@ -1,33 +1,57 @@
 import { useState, useMemo } from 'react'
-import { Word, WordFreq, calcWordFreq } from './Words';
+import { Word, ScoredWord, calcWordFreq } from './Words';
 
-type Range = { min:number, max:number }
-
-const calcFreqBounds = (words:Word[]) => {
-	const freq:WordFreq[] = calcWordFreq(words)
-	const bounds:Range = freq.length === 0
-	? {min:1,max:1}
+const minmax = (value:number[], default_min:number, default_max:number=default_min) => {
+	return value.length===0
+	? {min:default_min, max:default_max}
 	: {
-		min: Math.min(...freq.map(f=>f.value)),
-		max: Math.max(...freq.map(f=>f.value))
+		min: Math.min(...value),
+		max: Math.max(...value)
 	}
-	return { freq, bounds }
 }
 
-export const useFreqFilter = (words:Word[]) => {
-	const { freq, bounds } = useMemo(() => calcFreqBounds(words), [words])
+const useWordFilter = (words:ScoredWord[]) => {
+	const bounds = useMemo(() => minmax(words.map(w=>w.score), 1), [words])
 	const [range, setRange] = useState(bounds)
-	const filterFunc = useMemo(() => (findWord:Word) => {
-		const found = freq.find(({word:{word,pos}}:WordFreq) => {
-			return findWord.word === word && findWord.pos === pos
+	const filteredWords = useMemo(() => {
+		return words.filter((findWord:Word) => {
+			const found = words.find(({word,pos}) => {
+				return findWord.word === word && findWord.pos === pos
+			})
+			return found !== undefined && found.score >= range.min && found.score <= range.max
 		})
-		return found !== undefined && found.value >= range.min && found.value <= range.max
-	}, [freq, range])
-	const filteredWords = useMemo(() => words.filter(filterFunc), [words, filterFunc])
+	}, [words, range])
 	return {
 		words:filteredWords,
 		bounds,
 		range,
 		setRange
 	}
+}
+
+export const useFreqFilter = (words:Word[]) => {
+	const scored = useMemo(() => {
+		const freq = calcWordFreq(words)
+		return words.map(w=> {
+			const found = freq.find(f=>f.word===w.word && f.pos===w.pos)
+			const score = found !== undefined ? found.score : 0
+			return {
+				...w,
+				score
+			}
+		})
+	}, [words])
+	return useWordFilter(scored)
+}
+
+export const useLengthFilter = (words:Word[]) => {
+	const scored = useMemo(() => {
+		return words.map(w=> {
+			return {
+				...w,
+				score: w.word.length
+			}
+		})
+	}, [words])
+	return useWordFilter(scored)
 }
