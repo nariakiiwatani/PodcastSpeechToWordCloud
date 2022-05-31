@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import Wordcloud from 'react-d3-cloud';
 import {tokenize, getTokenizer} from "kuromojin";
 import Slider from 'rc-slider'
@@ -120,11 +120,11 @@ const RangeSlider = ({
 	</>);
 }
 
-type FilterName = 'length' | 'freq'
+type FilterType = 'length' | 'freq'
 const WordRangeFilter = (prop:{
-	type: FilterName,
+	type: FilterType,
 	words: Word[],
-	onResult:(words: Word[])=>void
+	onResult:(allowed: boolean[])=>void
 }) => {
 	const filterHook = useMemo(() => {
 		switch(prop.type) {
@@ -134,10 +134,10 @@ const WordRangeFilter = (prop:{
 				return useFreqFilter
 		}
 	}, [prop.type])
-	const { words:filteredWords, bounds, range, setRange } = filterHook(prop.words)
+	const { words:filteredWords, allowed, bounds, range, setRange } = filterHook(prop.words)
 	useEffect(() => {
-		prop.onResult(filteredWords)
-	}, [filteredWords, prop.onResult])
+		prop.onResult(allowed)
+	}, [allowed, prop.onResult])
 	return (<>
 		<div>
 			<p>{prop.type} filter</p>
@@ -146,6 +146,46 @@ const WordRangeFilter = (prop:{
 	</>);
 }
 
+const WordFilters = (prop:{
+	words: Word[],
+	filterTypes: FilterType[],
+	onResult:(allowed: boolean[])=>void
+}) => {
+	const {words, filterTypes, onResult} = prop
+	const initAllowed = useCallback(length => new Array<boolean[]>(length).fill(new Array<boolean>(words.length)), [words])
+	const [allowed, setAllowed] = useState<boolean[][]>(() => initAllowed(filterTypes.length))
+	useEffect(() => {
+		if(allowed.length !== filterTypes.length) {
+			setAllowed(initAllowed(filterTypes.length))
+		}
+	}, [filterTypes])
+	const updateAllowed = useCallback((index:number, value:boolean[]) => {
+		setAllowed(prev => {
+			return initAllowed(allowed.length)
+			.map((v, i) => i === index ? [...value] : [...prev[i]])
+		})
+	}, [allowed])
+	useEffect(() => {
+		onResult(allowed.reduce(
+			(acc, v) => acc.map((a, i) => a && v[i]),
+			new Array<boolean>(allowed[0].length).fill(true)
+		))
+	}, [allowed, onResult])
+	const updateFunctinos = useMemo(() => {
+		return filterTypes.map((type, i) => {
+			return (value:boolean[]) => updateAllowed(i, value)
+		})
+	}, [filterTypes])
+	return (<>
+		{filterTypes.map((filterType,index) => (
+			<WordRangeFilter
+				key={index}
+				type={filterType}
+				words={words}
+				onResult={updateFunctinos[index]}
+			/>))}
+	</>)
+}
 const MyWordcloud = ({text}:{text:string}) => {
 	const [useTokenizer, setUseTokenizer] = React.useState(false);
 	const [data, setData] = React.useState<{
@@ -153,8 +193,8 @@ const MyWordcloud = ({text}:{text:string}) => {
 		value: number;
 	}[]>([]);
 	const [words, setWords] = React.useState<Word[]>([]);
-
-	const [filteredWords, setFilteredWords] = React.useState<Word[]>([]);	
+	const [filterTypes, setFilterTypes] = React.useState<FilterType[]>(['length', 'freq']);
+	const [allowed, setAllowed] = React.useState<boolean[]>([]);
 	const [classFilter, setClassFilter] = React.useState<string[]>(['*']);
 	const updateClassFilter = React.useCallback((result:Map<string,boolean>) => {
 		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
@@ -163,10 +203,10 @@ const MyWordcloud = ({text}:{text:string}) => {
 		// const filterdWords = words
 		// .filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
 		// .filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
-
+		const filteredWords = words.filter((_,i)=>allowed[i])
 		const freq:WordFreqMap = words2freq(filteredWords);
 		setData(freq2array(freq, f=>f*100))
-	}, [filteredWords])
+	}, [allowed])
 	React.useEffect(() => {
 		const doTokenize = async () => {
 			tokenize(text.replace(/\s/g, ''))
@@ -187,9 +227,6 @@ const MyWordcloud = ({text}:{text:string}) => {
 		}
 	}, [text, useTokenizer])
 
-	const handleFreqFilterResult = useCallback((newWords:Word[]) => {
-		setFilteredWords(newWords)
-	}, [words])
 	return (<>
 		<input type='checkbox'
 			checked={useTokenizer}
@@ -197,21 +234,17 @@ const MyWordcloud = ({text}:{text:string}) => {
 			name='useTokenizer'
 		/>
 		<label htmlFor='useTokenizer'>use tokenizer</label>
-		<div style={{display: useTokenizer?'block':'none'}}>
+		{/* <div style={{display: useTokenizer?'block':'none'}}>
 			<WordClassFilter
 				words={words.filter(({pos})=>pos!=='*')}
 				default_value={false}
 				onResult={updateClassFilter}
 			/>
-		</div>
-		{/* <WordLengthFilter
+		</div> */}
+		<WordFilters
 			words={words}
-			onResult={setLengthFilter}
-		/> */}
-		<WordRangeFilter
-			type='freq'
-			words={words}
-			onResult={handleFreqFilterResult}
+			filterTypes={filterTypes}
+			onResult={setAllowed}
 		/>
 		<Wordcloud
 			data={data}

@@ -21,8 +21,18 @@ const useWordFilter = (words:ScoredWord[]) => {
 			return found !== undefined && found.score >= range.min && found.score <= range.max
 		})
 	}, [words, range])
+	const allowed = useMemo<boolean[]>(() => {
+		return words.map((findWord:Word, index:number) => {
+			const found = words.find(({word,pos}) => {
+				return findWord.word === word && findWord.pos === pos
+			})
+			return found !== undefined && found.score >= range.min && found.score <= range.max
+		})
+	}, [words, range])
+
 	return {
 		words:filteredWords,
+		allowed,
 		bounds,
 		range,
 		setRange
