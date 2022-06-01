@@ -84,7 +84,7 @@ const WordFilters = (prop:{
 			new Array<boolean>(allowed[0].length).fill(true)
 		))
 	}, [allowed, onResult])
-	const updateFunctinos = useMemo(() => {
+	const updateFunctions = useMemo(() => {
 		return filterTypes.map((type, i) => {
 			return (value:boolean[]) => updateAllowed(i, value)
 		})
@@ -95,7 +95,7 @@ const WordFilters = (prop:{
 				key={index}
 				type={filterType}
 				words={words}
-				onResult={updateFunctinos[index]}
+				onResult={updateFunctions[index]}
 			/>))}
 	</>)
 }

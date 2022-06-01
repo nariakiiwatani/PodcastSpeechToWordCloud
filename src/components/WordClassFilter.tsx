@@ -1,6 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Word } from '../libs/Words'
 import { useClassFilter } from '../libs/WordFilter'
+import ReactTooltip from 'react-tooltip'
 
 export const WordClassFilter = (prop:{
 	words: Word[],
@@ -18,16 +19,31 @@ export const WordClassFilter = (prop:{
 	useEffect(() => {
 		onResult(allowed)
 	}, [allowed])
+	const [tooltip, showTooltip] = useState(true)
+	console.info(Array.from(classCounts.entries()))
 	return (<>
 		<div>
 			{Array.from(classCounts.entries()).map(([className, words]) =>
-				<label key={className}>
-					<input type="checkbox"
-						checked={allowedClass.includes(className)}
-						onChange={e => handleChecked(className, e.target.checked)}
-					/>
-					{`${className} (${words.length})`}
-				</label>
+				<>
+					{tooltip && <ReactTooltip
+						id={className}
+					>
+						<span style={{wordBreak:'keep-all'}}>{words.map(({word}) => word).join('\n')}</span>
+					</ReactTooltip>}
+					<label
+						key={className}
+						data-tip
+						data-for={className}
+						onMouseEnter={() => showTooltip(true)}
+						onMouseLeave={() => showTooltip(false)}
+					>
+						<input type="checkbox"
+							checked={allowedClass.includes(className)}
+							onChange={e => handleChecked(className, e.target.checked)}
+						/>
+						{`${className} (${words.length})`}
+					</label>
+				</>
 			)}
 		</div>
 	</>)
