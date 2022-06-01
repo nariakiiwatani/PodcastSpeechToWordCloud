@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import Wordcloud from 'react-d3-cloud';
 import {tokenize, getTokenizer} from "kuromojin";
 import Slider from 'rc-slider'
@@ -94,29 +94,26 @@ type Range = {
 type RangeSliderProps = {
 	bounds:Range,
 	range:Range,
-	setRange:(range:Range)=>void
+	setRange:(range:Range)=>void,
+	marks?:{[id:number]: ReactNode} | {[id:number]: { style, label }}
 }
 const RangeSlider = ({
-	bounds, range, setRange
+	bounds, range, setRange, marks
 }:RangeSliderProps) => {
 	const handleChange = React.useCallback(([min, max]) => {
 		setRange({min, max})
 	}, [setRange])
 	return (<>
 		<div>
-			<span>{`bounds:(${bounds.min}, ${bounds.max})`}</span>
 			<Slider range
 				allowCross={true}
 				min={bounds.min}
 				max={bounds.max}
 				value={[range.min, range.max]}
-				pushable={1}
+				marks={marks}
 				draggableTrack
 				onChange={handleChange}
 			/>
-		</div>
-		<div>
-			<span>{`min:${range.min}, max:${range.max}`}</span>
 		</div>
 	</>);
 }
@@ -135,7 +132,7 @@ const WordRangeFilter = (prop:{
 				return useFreqFilter
 		}
 	}, [prop.type])
-	const { allowed, bounds, range, setRange } = filterHook(prop.words)
+	const { scoreCounts, allowed, bounds, range, setRange } = filterHook(prop.words)
 	const prev_bounds = useRef<Range>(bounds)
 	useEffect(() => {
 		const bounds_diff = {
@@ -161,10 +158,25 @@ const WordRangeFilter = (prop:{
 	useEffect(() => {
 		prop.onResult(allowed)
 	}, [allowed, prop.onResult])
+	const marks = useMemo(() => {
+		const marks: {[id:number]: ReactNode} = {}
+		scoreCounts.forEach((count, score) => {
+			marks[score] = (<>
+				<span>{`${score}(${count})`}</span>
+			</>)
+		})
+		return marks
+	}, [scoreCounts])
+			
 	return (<>
 		<div>
-			<p>{prop.type} filter</p>
-			<RangeSlider bounds={bounds} range={range} setRange={setRange}/>
+			<p>{`${prop.type} filter(${bounds.min}, ${bounds.max})`}</p>
+			<RangeSlider
+				bounds={bounds}
+				range={range}
+				marks={marks}
+				setRange={setRange}
+				/>
 		</div>
 	</>);
 }

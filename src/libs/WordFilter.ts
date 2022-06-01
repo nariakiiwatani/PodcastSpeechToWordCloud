@@ -21,8 +21,33 @@ const useWordFilter = (words:ScoredWord[]) => {
 			return found !== undefined && found.score >= range.min && found.score <= range.max
 		})
 	}, [words, range])
-
+	// count unique words by score
+	const scoreCounts = useMemo(() => {
+		const unique = new Map<number,number>()
+		const already = new Array<Word>()
+		words.forEach(({word,pos,score}) => {
+			if(already.find((w) => w.word === word && w.pos === pos)) {
+				return;
+			}
+			already.push({word,pos})
+			if(unique.has(score)) {
+				unique.set(score, unique.get(score)!+1)
+			} else {
+				unique.set(score, 1)
+			}
+		})
+		return unique
+	}, [words])
+	
+	// const scoreCounts:Map<number,number> = useMemo(() => 
+	// 	words.reduce((counts, word) => {
+	// 		const current = counts.get(word.score) || 0
+	// 		counts.set(word.score, current+1)
+	// 		return counts
+	// 	}, new Map<number,number>())
+	// , [words])
 	return {
+		scoreCounts,
 		allowed,
 		bounds,
 		range,
