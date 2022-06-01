@@ -159,19 +159,29 @@ const WordRangeFilter = (prop:{
 	useEffect(() => {
 		prop.onResult(allowed)
 	}, [allowed, prop.onResult])
+	const [tooltip, showTooltip] = useState(true)
 	const marks = useMemo(() => {
 		const marks: {[id:number]: ReactNode} = {}
 		scoreCounts.forEach((words, score) => {
 			const id = `${prop.type}${score}`
 			marks[score] = (<div key={id}>
-				<span data-tip data-for={id}>{`${score}(${words.length})`}</span>
-				<ReactTooltip id={id}>
-					<span>{words.map(({word}) => word).join('\n')}</span>
-				</ReactTooltip>
+				{tooltip && <ReactTooltip
+					id={id}
+				>
+					<span style={{wordBreak:'keep-all'}}>{words.map(({word}) => word).join('\n')}</span>
+				</ReactTooltip>}
+				<span
+					data-tip
+					data-for={id}
+					onMouseEnter={() => showTooltip(true)}
+					onMouseLeave={() => showTooltip(false)}
+				>
+					{`${score}(${words.length})`}
+				</span>
 			</div>)
 		})
 		return marks
-	}, [scoreCounts])
+	}, [scoreCounts, tooltip])
 			
 	return (<>
 		<div>
