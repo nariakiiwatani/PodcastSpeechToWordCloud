@@ -5,6 +5,7 @@ import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
 import { Word } from '../libs/Words';
 import { useFreqFilter, useLengthFilter } from '../libs/WordFilter';
+import ReactTooltip from 'react-tooltip';
 
 getTokenizer({dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"})
 
@@ -160,10 +161,14 @@ const WordRangeFilter = (prop:{
 	}, [allowed, prop.onResult])
 	const marks = useMemo(() => {
 		const marks: {[id:number]: ReactNode} = {}
-		scoreCounts.forEach((count, score) => {
-			marks[score] = (<>
-				<span>{`${score}(${count})`}</span>
-			</>)
+		scoreCounts.forEach((words, score) => {
+			const id = `${prop.type}${score}`
+			marks[score] = (<div key={id}>
+				<span data-tip data-for={id}>{`${score}(${words.length})`}</span>
+				<ReactTooltip id={id}>
+					<span>{words.map(({word}) => word).join('\n')}</span>
+				</ReactTooltip>
+			</div>)
 		})
 		return marks
 	}, [scoreCounts])
