@@ -34,7 +34,10 @@ export const WordClassFilter = (prop:{
 						key={className}
 						data-tip
 						data-for={className}
-						onMouseEnter={() => showTooltip(true)}
+						onMouseEnter={ () => {
+							showTooltip(false)
+							setTimeout(() => showTooltip(true), 50)
+						}}
 						onMouseLeave={() => showTooltip(false)}
 					>
 						<input type="checkbox"

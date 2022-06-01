@@ -86,7 +86,10 @@ const WordRangeFilterImpl = (prop:{
 				<span
 					data-tip
 					data-for={id}
-					onMouseEnter={() => showTooltip(true)}
+					onMouseEnter={() => {
+						showTooltip(false)
+						setTimeout(() => showTooltip(true), 50)
+					}}
 					onMouseLeave={() => showTooltip(false)}
 				>
 					{`${score}(${words.length})`}
