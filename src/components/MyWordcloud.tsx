@@ -1,11 +1,10 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import Wordcloud from 'react-d3-cloud';
 import {tokenize, getTokenizer} from "kuromojin";
-import Slider from 'rc-slider'
-import 'rc-slider/assets/index.css';
 import { Word } from '../libs/Words';
-import { useFreqFilter, useLengthFilter } from '../libs/WordFilter';
-import ReactTooltip from 'react-tooltip';
+import { FilterType } from "../libs/WordFilter"
+import { WordLengthRangeFilter, WordFreqRangeFilter } from './WordRangeFilter';
+import { WordClassFilter } from './WordClassFilter';
 
 getTokenizer({dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict"})
 
@@ -34,167 +33,31 @@ const freq2array = (freq: WordFreqMap, freq_map:(f:number)=>number=(f=>f)) => {
 	return arr;
 }
 
-const WordClassFilter = (prop:{
+const WordFilter = (prop:{
 	words: Word[],
-	default_value:boolean,
-	onResult:(result:Map<string,boolean>)=>void
-}) => {
-	const {words, default_value, onResult} = prop
-	const [filter, setFilter] = React.useState(new Map<string,boolean>())
-	const [count, setCount] = React.useState(new Map<string,number>())
-	const updateFilter = React.useCallback((pos:string, value:boolean) => {
-		const new_filter = new Map<string,boolean>(filter)
-		new_filter.set(pos, value)
-		setFilter(new_filter)
-		onResult(new_filter)
-	}, [filter, onResult])
-	
-	React.useEffect(() => {
-		setCount(() => {
-			const sorted = new Map<string,Set<string>>()
-			words.forEach(({word,pos}) => {
-				if (sorted.has(pos)) {
-					sorted.get(pos).add(word)
-				} else {
-					sorted.set(pos, new Set([word]))
-				}
-			})
-			const count = new Map<string,number>()
-			sorted.forEach((set, pos) => {
-				count.set(pos, set.size)
-			})
-			return count
-		})
-	}, [words])
-	React.useEffect(() => {
-		setFilter(filter => {
-			const map = new Map<string,boolean>(filter)
-			words.forEach(({pos}) => {
-				if(!map.has(pos)) {
-					map.set(pos, default_value)
-				}
-			})
-			return map
-		})
-	}, [words])
-	return(<>
-		{[...count.entries()].filter(([k,v])=>v>0).map(([k,v]) => <label key={k}>
-			<input type="checkbox"
-				checked={filter.get(k)}
-				onChange={e => updateFilter(k, e.target.checked)}
-			/>
-			{`${k} (${count.get(k)})`}
-		</label>)}
-	</>)
-}
-
-type Range = {
-	min:number,
-	max:number
-}
-type RangeSliderProps = {
-	bounds:Range,
-	range:Range,
-	setRange:(range:Range)=>void,
-	marks?:{[id:number]: ReactNode} | {[id:number]: { style, label }}
-}
-const RangeSlider = ({
-	bounds, range, setRange, marks
-}:RangeSliderProps) => {
-	const handleChange = React.useCallback(([min, max]) => {
-		setRange({min, max})
-	}, [setRange])
-	return (<>
-		<div>
-			<Slider range
-				allowCross={true}
-				min={bounds.min}
-				max={bounds.max}
-				value={[range.min, range.max]}
-				marks={marks}
-				draggableTrack
-				onChange={handleChange}
-			/>
-		</div>
-	</>);
-}
-
-type FilterType = 'length' | 'freq'
-const WordRangeFilter = (prop:{
 	type: FilterType,
-	words: Word[],
 	onResult:(allowed: boolean[])=>void
 }) => {
-	const filterHook = useMemo(() => {
-		switch(prop.type) {
-			case 'length':
-				return useLengthFilter
-			case 'freq':
-				return useFreqFilter
-		}
-	}, [prop.type])
-	const { scoreCounts, allowed, bounds, range, setRange } = filterHook(prop.words)
-	const prev_bounds = useRef<Range>(bounds)
-	useEffect(() => {
-		const bounds_diff = {
-			min: bounds.min - prev_bounds.current!.min,
-			max: bounds.max - prev_bounds.current!.max
-		}
-		const new_range = {
-			min: range.min + bounds_diff.min,
-			max: range.max + bounds_diff.max
-		}
-		if (new_range.min > new_range.max) {
-			[new_range.min, new_range.max] = [new_range.max, new_range.min]
-		}
-		[new_range.min, new_range.max] = [
-			Math.max(new_range.min, bounds.min),
-			Math.min(new_range.max, bounds.max)
-		]
-		setRange(new_range)
-		return () => {
-			prev_bounds.current = bounds
-		}
-	}, [bounds])
-	useEffect(() => {
-		prop.onResult(allowed)
-	}, [allowed, prop.onResult])
-	const [tooltip, showTooltip] = useState(true)
-	const marks = useMemo(() => {
-		const marks: {[id:number]: ReactNode} = {}
-		scoreCounts.forEach((words, score) => {
-			const id = `${prop.type}${score}`
-			marks[score] = (<div key={id}>
-				{tooltip && <ReactTooltip
-					id={id}
-				>
-					<span style={{wordBreak:'keep-all'}}>{words.map(({word}) => word).join('\n')}</span>
-				</ReactTooltip>}
-				<span
-					data-tip
-					data-for={id}
-					onMouseEnter={() => showTooltip(true)}
-					onMouseLeave={() => showTooltip(false)}
-				>
-					{`${score}(${words.length})`}
-				</span>
-			</div>)
-		})
-		return marks
-	}, [scoreCounts, tooltip])
-			
-	return (<>
-		<div>
-			<p>{`${prop.type} filter(${bounds.min}, ${bounds.max})`}</p>
-			<RangeSlider
-				bounds={bounds}
-				range={range}
-				marks={marks}
-				setRange={setRange}
-				/>
-		</div>
-	</>);
+	const {words, type, onResult} = prop
+	return (
+	type === 'length' ?
+		<WordLengthRangeFilter
+			words={words}
+			onResult={onResult}
+		/> : 
+	type === 'freq' ? 
+		<WordFreqRangeFilter
+			words={words}
+			onResult={onResult}
+		/> : 
+	type === 'class' ? 
+		<WordClassFilter
+			words={words}
+			onResult={onResult}
+		/> : 
+	<></>)
 }
+
 
 const WordFilters = (prop:{
 	words: Word[],
@@ -228,7 +91,7 @@ const WordFilters = (prop:{
 	}, [filterTypes])
 	return (<>
 		{filterTypes.map((filterType,index) => (
-			<WordRangeFilter
+			<WordFilter
 				key={index}
 				type={filterType}
 				words={words}
@@ -243,16 +106,9 @@ const MyWordcloud = ({text}:{text:string}) => {
 		value: number;
 	}[]>([]);
 	const [words, setWords] = React.useState<Word[]>([]);
-	const [filterTypes, setFilterTypes] = React.useState<FilterType[]>(['length', 'freq']);
+	const [filterTypes, setFilterTypes] = React.useState<FilterType[]>(['class', 'length', 'freq']);
 	const [allowed, setAllowed] = React.useState<boolean[]>([]);
-	const [classFilter, setClassFilter] = React.useState<string[]>(['*']);
-	const updateClassFilter = React.useCallback((result:Map<string,boolean>) => {
-		setClassFilter([...result.entries()].filter(([,v]) => v).map(([k]) => k))
-	}, [setClassFilter])
 	useEffect(() => {
-		// const filterdWords = words
-		// .filter(useTokenizer ? ({pos}) => classFilter.includes(pos) : ()=>true)
-		// .filter(({word})=>word.length>=lengthFilter.min && word.length<=lengthFilter.max)
 		const filteredWords = words.filter((_,i)=>allowed[i])
 		const freq:WordFreqMap = words2freq(filteredWords);
 		setData(freq2array(freq, f=>f*100))
@@ -284,13 +140,6 @@ const MyWordcloud = ({text}:{text:string}) => {
 			name='useTokenizer'
 		/>
 		<label htmlFor='useTokenizer'>use tokenizer</label>
-		{/* <div style={{display: useTokenizer?'block':'none'}}>
-			<WordClassFilter
-				words={words.filter(({pos})=>pos!=='*')}
-				default_value={false}
-				onResult={updateClassFilter}
-			/>
-		</div> */}
 		<WordFilters
 			words={words}
 			filterTypes={filterTypes}
