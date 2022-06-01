@@ -13,14 +13,6 @@ const minmax = (value:number[], default_min:number, default_max:number=default_m
 const useWordFilter = (words:ScoredWord[]) => {
 	const bounds = useMemo(() => minmax(words.map(w=>w.score), 1), [words])
 	const [range, setRange] = useState(bounds)
-	const filteredWords = useMemo(() => {
-		return words.filter((findWord:Word) => {
-			const found = words.find(({word,pos}) => {
-				return findWord.word === word && findWord.pos === pos
-			})
-			return found !== undefined && found.score >= range.min && found.score <= range.max
-		})
-	}, [words, range])
 	const allowed = useMemo<boolean[]>(() => {
 		return words.map((findWord:Word, index:number) => {
 			const found = words.find(({word,pos}) => {
@@ -31,7 +23,6 @@ const useWordFilter = (words:ScoredWord[]) => {
 	}, [words, range])
 
 	return {
-		words:filteredWords,
 		allowed,
 		bounds,
 		range,

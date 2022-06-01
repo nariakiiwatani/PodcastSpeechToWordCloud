@@ -109,7 +109,8 @@ const RangeSlider = ({
 				allowCross={true}
 				min={bounds.min}
 				max={bounds.max}
-				defaultValue={[range.min, range.max]}
+				value={[range.min, range.max]}
+				pushable={1}
 				draggableTrack
 				onChange={handleChange}
 			/>
@@ -134,7 +135,29 @@ const WordRangeFilter = (prop:{
 				return useFreqFilter
 		}
 	}, [prop.type])
-	const { words:filteredWords, allowed, bounds, range, setRange } = filterHook(prop.words)
+	const { allowed, bounds, range, setRange } = filterHook(prop.words)
+	const prev_bounds = useRef<Range>(bounds)
+	useEffect(() => {
+		const bounds_diff = {
+			min: bounds.min - prev_bounds.current!.min,
+			max: bounds.max - prev_bounds.current!.max
+		}
+		const new_range = {
+			min: range.min + bounds_diff.min,
+			max: range.max + bounds_diff.max
+		}
+		if (new_range.min > new_range.max) {
+			[new_range.min, new_range.max] = [new_range.max, new_range.min]
+		}
+		[new_range.min, new_range.max] = [
+			Math.max(new_range.min, bounds.min),
+			Math.min(new_range.max, bounds.max)
+		]
+		setRange(new_range)
+		return () => {
+			prev_bounds.current = bounds
+		}
+	}, [bounds])
 	useEffect(() => {
 		prop.onResult(allowed)
 	}, [allowed, prop.onResult])
@@ -248,6 +271,8 @@ const MyWordcloud = ({text}:{text:string}) => {
 		/>
 		<Wordcloud
 			data={data}
+			width={512}
+			height={512}
 		/>
 	</>);
 }
