@@ -24,7 +24,10 @@ export const useTokenizer = (text:string, options?:useTokenizerOptions) => {
 		}
 		return []
 	}, [tokenizer, text, options?.useBaseForm])
-	const result:Word[] = useMemo(() => tokens.map(token => ({
+	const result:Word[] = useMemo(() => tokens
+	.filter(token => {
+		return token.surface_form.match(/\s/) === null
+	}).map(token => ({
 		word: options?.useBaseForm ? token.basic_form : token.surface_form,
 		pos: token.pos,
 	})), [tokens])

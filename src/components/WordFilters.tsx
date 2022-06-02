@@ -30,11 +30,12 @@ const WordFilter = (prop:{
 }
 
 const WordFilters = (prop:{
+	className:string,
 	words: Word[],
 	filterTypes: FilterType[],
 	onResult:(allowed: boolean[])=>void
 }) => {
-	const {words, filterTypes, onResult} = prop
+	const {className, words, filterTypes, onResult} = prop
 	const initAllowed = useCallback(length => new Array<boolean[]>(length).fill(new Array<boolean>(words.length)), [words])
 	const [allowed, setAllowed] = useState<boolean[][]>(() => initAllowed(filterTypes.length))
 	useEffect(() => {
@@ -63,12 +64,14 @@ const WordFilters = (prop:{
 	}, [allowed, onResult])
 	return (<>
 		{filterTypes.map((filterType,index) => (
-			<WordFilter
-				key={filterType+index}
-				type={filterType}
-				words={words}
-				onResult={updateFunctions[index]}
-			/>))}
+			<div className={className}
+			key={filterType+index}>
+				<WordFilter
+					type={filterType}
+					words={words}
+					onResult={updateFunctions[index]}
+				/>
+			</div>))}
 	</>)
 }
 

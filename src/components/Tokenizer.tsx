@@ -14,18 +14,17 @@ export const Tokenizer = (prop:{
 	useEffect(() => {
 		onResult(tokens)
 	}, [tokens, onResult])
-	return (<>
+	return (<div>
+		<div>
+			<p>{`(${text.length} characters, ${tokens.length} tokens)`}</p>
+		</div>
 		<input type='checkbox'
 			checked={useBaseForm}
 			onChange={(e) => setUseBaseForm(e.target.checked)}
 			name='useBaseForm'
 		/>
-		<label htmlFor='useBaseForm'>基本形を使用する</label>
-		<div>
-			<p>{`${text.length} characters`}</p>
-			<p>{`${tokens.length} tokens`}</p>
-		</div>
-	</>)
+		<label htmlFor='useBaseForm'>動詞と形容詞は基本形を使用する</label>
+	</div>)
 }
 export const NoTokenizer = (prop:{
 	text: string,
@@ -39,6 +38,17 @@ export const NoTokenizer = (prop:{
 		}))
 		onResult(tokens)
 	}, [text, onResult])
+	const tokens = useMemo(() =>
+		text.split(/\s+/).map(word => ({
+			word,
+			pos: '*',
+		})), [text])
+	useEffect(() => {
+		onResult(tokens)
+	}, [tokens, onResult])
 	return (<>
+		<div>
+			<p>{`(${text.length} characters, ${tokens.length} tokens)`}</p>
+		</div>
 	</>)
 }
