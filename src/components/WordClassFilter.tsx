@@ -23,7 +23,7 @@ export const WordClassFilter = (prop:{
 	return (<>
 		<div>
 			{Array.from(classCounts.entries()).map(([className, words]) =>
-				<div key={className}>
+				<span key={className}>
 					{tooltip && <ReactTooltip
 						id={className}
 					>
@@ -44,7 +44,7 @@ export const WordClassFilter = (prop:{
 						/>
 						{`${className} (${words.length})`}
 					</label>
-				</div>
+				</span>
 			)}
 		</div>
 	</>)

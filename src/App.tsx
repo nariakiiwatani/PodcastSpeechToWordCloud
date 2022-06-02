@@ -19,16 +19,16 @@ function App() {
 	return (
 		<div className={styles.app}>
 			<div className={styles.editor}>
-				<div>
+				<div className={styles.editorItem}>
 					<Speech2Text onSentence={addText} onError={console.error} />
 				</div>
-				<div>
+				<div className={styles.editorItem}>
 					<textarea
 						value={text}
 						onChange={(e) => setText(e.target.value)}
 					/>
 				</div>
-				<div>
+				<div className={styles.editorItem}>
 					<input
 						type='checkbox'
 						checked={useTokenizer}
