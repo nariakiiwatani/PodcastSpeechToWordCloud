@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { createModel, KaldiRecognizer, Model } from 'vosk-browser'
 
 interface VoskResult {
@@ -17,9 +17,9 @@ const Speech2Text = (prop: {
 		onError: (err: any) => void;
 }) => {
 	const { onResult, onError } = prop
-	const [recognizer, setRecognizer] = React.useState<KaldiRecognizer>()
-	const [utterances, setUtterances] = React.useState<VoskResult[]>([]);
-	const [model, setModel] = React.useState<Model>();
+	const [recognizer, setRecognizer] = useState<KaldiRecognizer>()
+	const [utterances, setUtterances] = useState<VoskResult[]>([]);
+	const [model, setModel] = useState<Model>();
 	const loadModel = async () => {
 		const model = await createModel(MODEL_PATH);
 		setModel(model);
@@ -65,7 +65,7 @@ const Speech2Text = (prop: {
 		};
 		reader.readAsArrayBuffer(file);
 	}
-	React.useEffect(() => {
+	useEffect(() => {
 		onResult(utterances.map(u=>u.text.replace(/\s/g, "")).join("\n"))
 	}, [utterances])
 	return (<>
