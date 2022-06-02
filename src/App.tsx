@@ -7,6 +7,9 @@ import WordFilters from './components/WordFilters';
 
 function App() {
 	const [text, setText] = useState('')
+	const addText = useCallback((text: string) => {
+		setText(prev=>[prev,text].join('\n'))
+	}, [setText])
 	const [useTokenizer, setUseTokenizer] = useState(true)
 	const [tokens, setTokens] = useState<Word[]>([])
 	const [words, setWords] = useState<string[]>([])
@@ -17,7 +20,7 @@ function App() {
 		<div className={styles.app}>
 			<div className={styles.editor}>
 				<div>
-					<Speech2Text onResult={setText} onError={console.error} />
+					<Speech2Text onSentence={addText} onError={console.error} />
 				</div>
 				<div>
 					<textarea

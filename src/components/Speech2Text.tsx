@@ -13,10 +13,11 @@ interface VoskResult {
   
 const MODEL_PATH = "models/vosk-model-small-ja-0.22.zip"
 const Speech2Text = (prop: {
-		onResult: (text: string) => void;
-		onError: (err: any) => void;
+	onSentence?: (text: string) => void;
+	onResult?: (text: string) => void;
+	onError: (err: any) => void;
 }) => {
-	const { onResult, onError } = prop
+	const { onSentence, onResult, onError } = prop
 	const [recognizer, setRecognizer] = useState<KaldiRecognizer>()
 	const [utterances, setUtterances] = useState<VoskResult[]>([]);
 	const [model, setModel] = useState<Model>();
@@ -50,6 +51,7 @@ const Speech2Text = (prop: {
 				if(result.text === '') {
 					return
 				}
+				onSentence && onSentence(result.text.replace(/\s/g, ""))
 				setUtterances((utt: VoskResult[]) => [...utt, result]);
 			})
 			recognizer.on("error", onError)
@@ -66,7 +68,7 @@ const Speech2Text = (prop: {
 		reader.readAsArrayBuffer(file);
 	}
 	useEffect(() => {
-		onResult(utterances.map(u=>u.text.replace(/\s/g, "")).join("\n"))
+		onResult && onResult(utterances.map(u=>u.text.replace(/\s/g, "")).join("\n"))
 	}, [utterances])
 	return (<>
 		<input type='file'

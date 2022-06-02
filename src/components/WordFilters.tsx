@@ -65,7 +65,7 @@ const WordFilters = (prop:{
 	return (<>
 		{filterTypes.map((filterType,index) => (
 			<div className={className}
-			key={filterType+index}>
+				key={filterType+index}>
 				<WordFilter
 					type={filterType}
 					words={words}
