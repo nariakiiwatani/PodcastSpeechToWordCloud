@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import './App.css';
 import { Tokenizer, NoTokenizer } from './components/Tokenizer';
 import MyWordCloud from './components/MyWordcloud';
 import Speech2Text from './components/Speech2Text';
