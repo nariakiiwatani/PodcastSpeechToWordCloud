@@ -71,7 +71,7 @@ const WordRangeFilterImpl = (prop:{
 	}, [bounds])
 	useEffect(() => {
 		prop.onResult(allowed)
-	}, [allowed, prop.onResult])
+	}, [allowed])
 	const [tooltip, showTooltip] = useState(true)
 	const marks = useMemo(() => {
 		const marks: {[id:number]: ReactNode} = {}

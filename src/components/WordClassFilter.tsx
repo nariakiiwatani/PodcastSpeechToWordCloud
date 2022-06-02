@@ -20,18 +20,16 @@ export const WordClassFilter = (prop:{
 		onResult(allowed)
 	}, [allowed])
 	const [tooltip, showTooltip] = useState(true)
-	console.info(Array.from(classCounts.entries()))
 	return (<>
 		<div>
 			{Array.from(classCounts.entries()).map(([className, words]) =>
-				<>
+				<div key={className}>
 					{tooltip && <ReactTooltip
 						id={className}
 					>
 						<span style={{wordBreak:'keep-all'}}>{words.map(({word}) => word).join('\n')}</span>
 					</ReactTooltip>}
 					<label
-						key={className}
 						data-tip
 						data-for={className}
 						onMouseEnter={ () => {
@@ -46,7 +44,7 @@ export const WordClassFilter = (prop:{
 						/>
 						{`${className} (${words.length})`}
 					</label>
-				</>
+				</div>
 			)}
 		</div>
 	</>)
