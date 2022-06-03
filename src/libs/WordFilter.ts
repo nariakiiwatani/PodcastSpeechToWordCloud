@@ -12,7 +12,7 @@ const minmax = (value:number[], default_min:number, default_max:number=default_m
 	}
 }
 
-const useRangeFilter = (words:ScoredWord[]) => {
+const useRangeFilterImpl = (words:ScoredWord[]) => {
 	const bounds = useMemo(() => minmax(words.map(w=>w.score), 1), [words])
 	const [range, setRange] = useState(bounds)
 	const allowed = useMemo<boolean[]>(() => {
@@ -77,19 +77,17 @@ const calcScore = (words:Word[], type:FilterType):ScoredWord[] => {
 	}
 }
 
+export const useRangeFilter = (words:Word[], type:FilterType) => {
+	const scored = useMemo(() => calcScore(words, type), [words])
+	return useRangeFilterImpl(scored)
+}
+
 export const useFreqFilter = (words:Word[]) => {
-	const scored = useMemo(() => calcFreq(words), [words])
-	return useRangeFilter(scored)
+	return useRangeFilter(words, 'freq')
 }
 
 export const useLengthFilter = (words:Word[]) => {
-	const scored = useMemo(() => calcLength(words), [words])
-	return useRangeFilter(scored)
-}
-
-export const useWordFilter = (words:Word[], type:FilterType) => {
-	const scored = useMemo(() => calcScore(words, type), [words])
-	return useRangeFilter(scored)
+	return useRangeFilter(words, 'length')
 }
 
 export const useClassFilter = (words:Word[]) => {

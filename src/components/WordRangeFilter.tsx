@@ -2,7 +2,7 @@ import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
 import { ReactNode, useMemo, useRef, useEffect, useState, useCallback } from 'react'
 import ReactTooltip from 'react-tooltip'
-import { FilterType, useWordFilter } from '../libs/WordFilter'
+import { FilterType, useRangeFilter } from '../libs/WordFilter'
 import { Word } from '../libs/Words'
 
 type Range = {
@@ -117,7 +117,7 @@ export const WordRangeFilter = (prop:{
 	words: Word[],
 	onResult:(allowed: boolean[])=>void
 }) => {
-	const { scoreCounts, allowed, bounds, range, setRange } = useWordFilter(prop.words, prop.type)
+	const { scoreCounts, allowed, bounds, range, setRange } = useRangeFilter(prop.words, prop.type)
 	return (<WordRangeFilterImpl
 		filterName={prop.type}
 		words={prop.words}
