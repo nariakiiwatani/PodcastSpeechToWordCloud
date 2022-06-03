@@ -37,11 +37,12 @@ function App() {
 					<Speech2Text onSentence={addText} onError={console.error} />
 				</div>
 				<div className={styles.editorItem}>
-					<p className={styles.heading3}>直接入力もできます</p>
+					<p className={styles.heading3}>文字起こし結果</p>
 					<textarea
 						className={styles.border}
 						value={text}
 						onChange={(e) => setText(e.target.value)}
+						placeholder='直接入力もできます'
 					/>
 				</div>
 				<div className={styles.editorItem}>
