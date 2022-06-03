@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { ChromePicker as ColorPicker } from 'react-color'
 
 const EditColor = (prop:{
@@ -45,41 +45,56 @@ const EditImage = (prop:{
 }
 
 const EditBackground = (prop:{
-	onChange: ({color,image}:{color?:{r,g,b,a}, image?: string}) => void
+	element: React.RefObject<HTMLElement>
+	onChange?: ({color,image}:{color?:{r,g,b,a}, image?: string}) => void
 }) => {
-	const { onChange } = prop
-	const [color, setColor] = useState({r:255,g:255,b:0,a:1})
+	const { element, onChange } = prop
+	const [color, setColor] = useState({r:255,g:255,b:255,a:1})
 	const [image, setImage] = useState('')
-	const [selection, setSelection] = useState('color')
-	const handleSelectionChange = useCallback((e) => {
-		const name = e.target.id
-		setSelection(name)
-		if(onChange) {
-			name === 'color' && onChange({color})
-			name === 'image' && onChange({image})
+	const [selection, setSelection] = useState('none')
+	useEffect(() => {
+		if(!element?.current) {
+			return
 		}
-	}, [color, image])
-	const onChangeColor = useCallback((color) => {
-		setColor(color)
-		onChange && onChange({ color })
-	}, [onChange])
-	const onChangeImage = useCallback((image) => {
-		setImage(image)
-		onChange && onChange({ image })
-	}, [onChange])
+		const style = element.current.style
+		if(selection === 'none') {
+			style.backgroundImage = ''
+			style.backgroundColor = ''
+		}
+		else if(selection === 'color') {
+			const {r,g,b,a} = color
+			style.backgroundColor = `rgba(${r},${g},${b},${a})`
+			style.backgroundImage = ''
+		}
+		else if(selection === 'image') {
+			style.backgroundImage = `url(${image})`
+			style.backgroundSize = 'cover'
+		}
+		setSelection(selection)
+		if(onChange) {
+			selection === 'none' && onChange({})
+			selection === 'color' && onChange({color})
+			selection === 'image' && onChange({image})
+		}
+	}, [color, image, selection, element?.current])
 	
 	return (<>
-		<input type="radio" name="background" id="color" defaultChecked
-			onChange={handleSelectionChange}
+		<h1>背景</h1>
+		<input type="radio" name="background" id="none" defaultChecked
+			onChange={e=>setSelection(e.target.id)}
+			/>
+		<label htmlFor="none">なし</label>
+		<input type="radio" name="background" id="color"
+			onChange={e=>setSelection(e.target.id)}
 		/>
 		<label htmlFor="color">Color</label>
 		<input type="radio" name="background" id="image"
-			onChange={handleSelectionChange}
-		/>
+			onChange={e=>setSelection(e.target.id)}
+			/>
 		<label htmlFor="image">Image</label>
 		
-		{selection === 'color' && <EditColor onChange={onChangeColor} defaultValue={color} />}
-		{selection === 'image' && <EditImage onChange={onChangeImage} defaultValue={image} />}
+		{selection === 'color' && <EditColor onChange={setColor} defaultValue={color} />}
+		{selection === 'image' && <EditImage onChange={setImage} defaultValue={image} />}
 	</>)
 }
 export default EditBackground;

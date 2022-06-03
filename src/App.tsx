@@ -19,21 +19,6 @@ function App() {
 		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
 	}, [tokens]);
 	const captureElement = useRef<HTMLDivElement>(null)
-	const handleChangeBackground = useCallback(({color,image}:{color:{r,g,b,a}, image: string}) => {
-		if(!captureElement?.current) {
-			return
-		}
-		const style = captureElement.current.style
-		if(color) {
-			const {r,g,b,a} = color
-			style.backgroundColor = `rgba(${r},${g},${b},${a})`
-			style.backgroundImage = ''
-		}
-		if(image) {
-			style.backgroundImage = `url(${image})`
-			style.backgroundSize = 'cover'
-		}
-	}, [captureElement?.current])
 	const handleCapture = useCallback(async () => {
 		if(!captureElement?.current) {
 			return
@@ -81,7 +66,7 @@ function App() {
 			<div className={styles.canvasEditor}>
 				<div className={styles.editorItem}>
 					<EditBackground
-						onChange={handleChangeBackground}
+						element={captureElement}
 					/>
 				</div>
 				<div className={styles.editorItem}>
