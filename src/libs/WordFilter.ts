@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Word, ScoredWord, calcWordFreq } from './Words';
 
-export type FilterType = 'length' | 'freq' | 'class'
+export type FilterType = 'length' | 'freq' | 'class' | 'words'
 
 const minmax = (value:number[], default_min:number, default_max:number=default_min) => {
 	return value.length===0
@@ -127,5 +127,18 @@ export const useClassFilter = (words:Word[]) => {
 		allowed,
 		allowedClass,
 		setAllowedClass
+	}
+}
+
+export const useDenyFilter = (words:Word[]) => {
+	const [allowed, setAllowed] = useState<boolean[]>(words.map(()=>true))
+	const [denyWords, setDenyWords] = useState<string[]>([])
+	useEffect(() => {
+		setAllowed(words.map(w=>!denyWords.includes(w.word)))
+	}, [words, denyWords])
+	return {
+		allowed,
+		denyWords,
+		setDenyWords
 	}
 }

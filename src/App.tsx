@@ -58,8 +58,8 @@ function App() {
 				<WordFilters
 					className={styles.editorItem}
 					filterTypes={useTokenizer
-						? ['class', 'length', 'freq']
-						: ['length', 'freq']}
+						? ['class', 'length', 'freq', 'words']
+						: ['length', 'freq', 'words']}
 					words={tokens}
 					onResult={handleFilter}
 				/>

@@ -3,6 +3,7 @@ import { FilterType } from '../libs/WordFilter'
 import { Word } from '../libs/Words'
 import { WordClassFilter } from './WordClassFilter'
 import { WordLengthRangeFilter, WordFreqRangeFilter } from './WordRangeFilter'
+import { WordDenyFilter } from './WordDenyFilter'
 
 const WordFilter = (prop:{
 	words: Word[],
@@ -12,29 +13,37 @@ const WordFilter = (prop:{
 	const {words, type, onResult} = prop
 	return (<>
 		{type === 'length' &&
-			<>
-				<p className={styles.heading3}>語の長さでフィルタ</p>
-				<WordLengthRangeFilter
-					words={words}
-					onResult={onResult}
-				/>
-			</>}
+		<>
+			<p className={styles.heading3}>語の長さでフィルタ</p>
+			<WordLengthRangeFilter
+				words={words}
+				onResult={onResult}
+			/>
+		</>}
 		{type === 'freq' &&
-			<>
-				<p className={styles.heading3}>出現回数でフィルタ</p>
-				<WordFreqRangeFilter
-					words={words}
-					onResult={onResult}
-				/>
-			</>}
+		<>
+			<p className={styles.heading3}>出現回数でフィルタ</p>
+			<WordFreqRangeFilter
+				words={words}
+				onResult={onResult}
+			/>
+		</>}
 		{type === 'class' &&
-			<>
-				<p className={styles.heading3}>品詞でフィルタ</p>
-				<WordClassFilter
-					words={words}
-					onResult={onResult}
-				/>
-			</>}
+		<>
+			<p className={styles.heading3}>品詞でフィルタ</p>
+			<WordClassFilter
+				words={words}
+				onResult={onResult}
+			/>
+		</>}
+		{type === 'words' &&
+		<>
+			<p className={styles.heading3}>除外語</p>
+			<WordDenyFilter
+				words={words}
+				onResult={onResult}
+			/>
+		</>}
 	</>)
 }
 
