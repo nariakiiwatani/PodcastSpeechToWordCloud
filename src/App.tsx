@@ -24,6 +24,7 @@ function App() {
 		return value * sizeMult + sizeOffset
 	}, [sizeMult, sizeOffset])
 	const captureElement = useRef<HTMLDivElement>(null)
+	const [autoUpdate, setAutoUpdate] = useState(true)
 
 	return (
 		<div className={styles.app}>
@@ -111,7 +112,15 @@ function App() {
 			</div>
 			<div className={styles.preview}>
 				<p className={styles.heading3}>プレビュー</p>
+				<input
+					type='checkbox'
+					checked={autoUpdate}
+					onChange={(e) => setAutoUpdate(e.target.checked)}
+					name='autoUpdate'
+				/>
+				<label htmlFor='autoUpdate'>自動更新</label>
 				<MyWordCloud
+					autoUpdate={autoUpdate}	
 					drawRef={captureElement}
 					words={words}
 					valueMap={sizeMapFunction}
