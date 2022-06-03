@@ -4,7 +4,6 @@ import MyWordCloud from './components/MyWordcloud';
 import Speech2Text from './components/Speech2Text';
 import { Word } from './libs/Words';
 import WordFilters from './components/WordFilters';
-import html2canvas from 'html2canvas';
 import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
 
@@ -19,6 +18,11 @@ function App() {
 	const handleFilter = useCallback((allowed: boolean[]) => {
 		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
 	}, [tokens]);
+	const [sizeOffset, setSizeOffset] = useState(0)
+	const [sizeMult, setSizeMult] = useState(100)
+	const sizeMapFunction = useCallback((value: number) => {
+		return value * sizeMult + sizeOffset
+	}, [sizeMult, sizeOffset])
 	const captureElement = useRef<HTMLDivElement>(null)
 
 	return (
@@ -61,6 +65,33 @@ function App() {
 			</div>
 			<div className={styles.canvasEditor}>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>文字サイズ</p>
+					<div>
+						<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
+						<br />
+						<input
+							type='range'
+							min='0'
+							max='1000'
+							value={sizeOffset}
+							onChange={(e) => setSizeOffset(parseInt(e.target.value))}
+							name='sizeOffset'
+						/>
+					</div>
+					<div>
+						<label htmlFor='sizeMult'>{`倍率(${sizeMult})`}</label>
+						<br />
+						<input
+							type='range'
+							min='1'
+							max='100'
+							value={sizeMult}
+							onChange={(e) => setSizeMult(parseInt(e.target.value))}
+							name='sizeMult'
+						/>
+					</div>
+				</div>
+				<div className={styles.editorItem}>
 					<p className={styles.heading3}>背景を設定</p>
 					<EditBackground
 						element={captureElement}
@@ -83,6 +114,7 @@ function App() {
 				<MyWordCloud
 					drawRef={captureElement}
 					words={words}
+					valueMap={sizeMapFunction}
 				/>
 			</div>
 		</div>
@@ -104,12 +136,12 @@ const styles = {
 	basis-1/6
 	gap-4
 	p-2
-	m-2
+	m-1
 	border-2
 	`,
 	editorItem : `
 	flex-none
-	p-4
+	p-2
 	pb-8
 	border-b-2
 	`,
@@ -119,13 +151,13 @@ const styles = {
 	basis-1/6
 	gap-4
 	p-2
-	m-2
+	m-1
 	border-2
 	`,
 	preview : `
 	flex-1
 	p-2
-	m-2
+	m-1
 	border-2
 	`,
 	heading3 : `

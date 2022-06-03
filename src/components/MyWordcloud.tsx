@@ -3,13 +3,14 @@ import Wordcloud from 'react-d3-cloud';
 
 const MyWordcloud = (prop:{
 	drawRef?: React.MutableRefObject<HTMLDivElement>,
-	words:string[]
+	words:string[],
+	valueMap?: (value:number)=>number
 }) => {
 	interface Datum {
 		text: string,
 		value: number
 	}
-	const { drawRef, words } = prop
+	const { drawRef, words, valueMap=v=>v*100 } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	drawRef.current = innerRef.current
 	const data:Datum[] = useMemo(() => {
@@ -27,9 +28,9 @@ const MyWordcloud = (prop:{
 		}, new Array<Datum>())
 		.map(w=> ({
 			...w,
-			value: w.value*100
+			value: valueMap(w.value)
 		}))
-	}, [words])
+	}, [words, valueMap])
 
 	return (<>
 		<div
