@@ -1,14 +1,17 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import Wordcloud from 'react-d3-cloud';
 
 const MyWordcloud = (prop:{
+	drawRef?: React.MutableRefObject<HTMLDivElement>,
 	words:string[]
 }) => {
 	interface Datum {
 		text: string,
 		value: number
 	}
-	const { words } = prop
+	const { drawRef, words } = prop
+	const innerRef = useRef<HTMLDivElement>()
+	drawRef.current = innerRef.current
 	const data:Datum[] = useMemo(() => {
 		return words.reduce((acc, word) => {
 			const found = acc.find(({text})=>word===text)
@@ -29,11 +32,15 @@ const MyWordcloud = (prop:{
 	}, [words])
 
 	return (<>
-		<Wordcloud
-			data={data}
-			width={512}
-			height={512}
-		/>
+		<div
+			ref={innerRef}
+		>
+			<Wordcloud
+				data={data}
+				width={512}
+				height={512}
+			/>
+		</div>
 	</>);
 }
 
