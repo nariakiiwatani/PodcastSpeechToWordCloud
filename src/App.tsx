@@ -85,7 +85,7 @@ function App() {
 						<input
 							type='range'
 							min='1'
-							max='100'
+							max='1000'
 							value={sizeMult}
 							onChange={(e) => setSizeMult(parseInt(e.target.value))}
 							name='sizeMult'
@@ -102,11 +102,7 @@ function App() {
 					<DownloadElement
 						src={captureElement}
 					>
-					<button
-						className={styles.downloadButton}
-					>
-						画像保存
-					</button>
+						<button className={styles.downloadButton}>画像保存</button>
 					</DownloadElement>
 				</div>
 			</div>

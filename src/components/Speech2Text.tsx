@@ -20,6 +20,8 @@ const Speech2Text = (prop: {
 	const { onSentence, onResult, onError } = prop
 	const [recognizer, setRecognizer] = useState<KaldiRecognizer>()
 	const [utterances, setUtterances] = useState<VoskResult[]>([]);
+	const [timelineMax, setTimelineMax] = useState(0);
+	const [audioDutation, setAudioDutation] = useState(0);
 	const [model, setModel] = useState<Model>();
 	const loadModel = async () => {
 		const model = await createModel(MODEL_PATH);
@@ -33,6 +35,8 @@ const Speech2Text = (prop: {
 			setRecognizer(null)
 		}
 		setUtterances([])
+		setTimelineMax(0)
+		setAudioDutation(0)
 		const thismodel = await loadModel()
 		const file = e?.target?.files && e.target.files.length > 0 ? e.target.files[0] : null;
 		if (!file) {
@@ -42,6 +46,8 @@ const Speech2Text = (prop: {
 		reader.onload = async () => {
 			const audioCtx = new AudioContext();
 			const buffer = await audioCtx.decodeAudioData(reader.result as ArrayBuffer)	
+			setAudioDutation(buffer.duration)
+
 			const sampleRate = buffer.sampleRate;
 			const recognizer = new thismodel.KaldiRecognizer(sampleRate);
 			setRecognizer(recognizer)
@@ -51,6 +57,7 @@ const Speech2Text = (prop: {
 				if(result.text === '') {
 					return
 				}
+				setTimelineMax(prev => Math.max(prev, result.result.reduce((prev, cur) => Math.max(prev, cur.end), 0)))
 				onSentence && onSentence(result.text.replace(/\s/g, ""))
 				setUtterances((utt: VoskResult[]) => [...utt, result]);
 			})
@@ -70,10 +77,20 @@ const Speech2Text = (prop: {
 	useEffect(() => {
 		onResult && onResult(utterances.map(u=>u.text.replace(/\s/g, "")).join("\n"))
 	}, [utterances])
+	const seconds2Str = (seconds: number, padding:number=2) => {
+		const h = Math.floor(seconds / 3600)
+		const m = Math.floor((seconds % 3600) / 60)
+		const s = Math.floor(seconds % 60)
+		const pad = (n: number) => ('0' + n).slice(-padding)
+		return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`
+	}
 	return (<>
 		<input type='file'
 			onChange={onChange}
 		/>
+		{(timelineMax > 0 || audioDutation > 0) && 
+			<p>処理済み : {`${seconds2Str(timelineMax)}/${seconds2Str(audioDutation)}`}</p>
+		}
 	</>)
 }
 export default Speech2Text
