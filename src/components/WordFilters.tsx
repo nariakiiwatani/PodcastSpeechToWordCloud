@@ -12,20 +12,29 @@ const WordFilter = (prop:{
 	const {words, type, onResult} = prop
 	return (<>
 		{type === 'length' &&
-			<WordLengthRangeFilter
-				words={words}
-				onResult={onResult}
-			/>}
+			<>
+				<p className={styles.heading3}>語の長さでフィルタ</p>
+				<WordLengthRangeFilter
+					words={words}
+					onResult={onResult}
+				/>
+			</>}
 		{type === 'freq' &&
-			<WordFreqRangeFilter
-				words={words}
-				onResult={onResult}
-			/>}
+			<>
+				<p className={styles.heading3}>出現回数でフィルタ</p>
+				<WordFreqRangeFilter
+					words={words}
+					onResult={onResult}
+				/>
+			</>}
 		{type === 'class' &&
-			<WordClassFilter
-				words={words}
-				onResult={onResult}
-			/>}
+			<>
+				<p className={styles.heading3}>品詞でフィルタ</p>
+				<WordClassFilter
+					words={words}
+					onResult={onResult}
+				/>
+			</>}
 	</>)
 }
 
@@ -76,3 +85,11 @@ const WordFilters = (prop:{
 }
 
 export default WordFilters
+
+const styles = {
+	heading3 : `
+	text-xl
+	text-slate-600
+	font-semibold
+	`,
+}

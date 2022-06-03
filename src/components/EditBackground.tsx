@@ -79,7 +79,6 @@ const EditBackground = (prop:{
 	}, [color, image, selection, element?.current])
 	
 	return (<>
-		<h1>背景</h1>
 		<input type="radio" name="background" id="none" defaultChecked
 			onChange={e=>setSelection(e.target.id)}
 			/>

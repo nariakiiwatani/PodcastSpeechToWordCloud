@@ -25,22 +25,26 @@ function App() {
 		<div className={styles.app}>
 			<div className={styles.wordEditor}>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>音声ファイルを選択</p>
 					<Speech2Text onSentence={addText} onError={console.error} />
 				</div>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>直接入力もできます</p>
 					<textarea
+						className={styles.border}
 						value={text}
 						onChange={(e) => setText(e.target.value)}
 					/>
 				</div>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>形態素解析を使用</p>
 					<input
 						type='checkbox'
 						checked={useTokenizer}
 						onChange={(e) => setUseTokenizer(e.target.checked)}
 						name='useTokenizer'
 					/>
-					<label htmlFor='useTokenizer'>トークナイザーを使用する</label>
+					<label htmlFor='useTokenizer'>有効/無効</label>
 					{useTokenizer
 						? <Tokenizer text={text} onResult={setTokens} />
 						: <NoTokenizer text={text} onResult={setTokens} />
@@ -57,6 +61,7 @@ function App() {
 			</div>
 			<div className={styles.canvasEditor}>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>背景を設定</p>
 					<EditBackground
 						element={captureElement}
 					/>
@@ -65,11 +70,16 @@ function App() {
 					<DownloadElement
 						src={captureElement}
 					>
-					<button>画像保存</button>
+					<button
+						className={styles.downloadButton}
+					>
+						画像保存
+					</button>
 					</DownloadElement>
 				</div>
 			</div>
 			<div className={styles.preview}>
+				<p className={styles.heading3}>プレビュー</p>
 				<MyWordCloud
 					drawRef={captureElement}
 					words={words}
@@ -99,6 +109,9 @@ const styles = {
 	`,
 	editorItem : `
 	flex-none
+	p-4
+	pb-8
+	border-b-2
 	`,
 	canvasEditor : `
 	flex
@@ -114,5 +127,23 @@ const styles = {
 	p-2
 	m-2
 	border-2
-	`
+	`,
+	heading3 : `
+	text-xl
+	text-slate-600
+	font-semibold
+	`,
+	border : `
+	border-2
+	border-slate-600
+	`,
+	downloadButton : `
+	text-xl
+	text-slate-600
+	font-semibold
+	rounded-xl
+	p-4
+	items-center
+	border-2
+	`,
 }
