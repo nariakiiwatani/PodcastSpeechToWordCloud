@@ -6,6 +6,7 @@ import { Word } from './libs/Words';
 import WordFilters from './components/WordFilters';
 import html2canvas from 'html2canvas';
 import EditBackground from './components/EditBackground';
+import DownloadElement from './components/DownloadElement';
 
 function App() {
 	const [text, setText] = useState('')
@@ -19,15 +20,6 @@ function App() {
 		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
 	}, [tokens]);
 	const captureElement = useRef<HTMLDivElement>(null)
-	const handleCapture = useCallback(async () => {
-		if(!captureElement?.current) {
-			return
-		}
-		await html2canvas(captureElement.current)
-		.then(canvas => {
-			document.body.appendChild(canvas);
-		})
-	}, [captureElement?.current])
 
 	return (
 		<div className={styles.app}>
@@ -70,7 +62,11 @@ function App() {
 					/>
 				</div>
 				<div className={styles.editorItem}>
-					<button onClick={handleCapture}>capture</button>
+					<DownloadElement
+						src={captureElement}
+					>
+					<button>画像保存</button>
+					</DownloadElement>
 				</div>
 			</div>
 			<div className={styles.preview}>
