@@ -5,6 +5,7 @@ import Speech2Text from './components/Speech2Text';
 import { Word } from './libs/Words';
 import WordFilters from './components/WordFilters';
 import html2canvas from 'html2canvas';
+import EditBackground from './components/EditBackground';
 
 function App() {
 	const [text, setText] = useState('')
@@ -18,8 +19,26 @@ function App() {
 		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
 	}, [tokens]);
 	const captureElement = useRef<HTMLDivElement>(null)
+	const handleChangeBackground = useCallback(({color,image}:{color:{r,g,b,a}, image: string}) => {
+		if(!captureElement?.current) {
+			return
+		}
+		const style = captureElement.current.style
+		if(color) {
+			const {r,g,b,a} = color
+			style.backgroundColor = `rgba(${r},${g},${b},${a})`
+			style.backgroundImage = ''
+		}
+		if(image) {
+			style.backgroundImage = `url(${image})`
+			style.backgroundSize = 'cover'
+		}
+	}, [captureElement?.current])
 	const handleCapture = useCallback(async () => {
-		captureElement.current && await html2canvas(captureElement.current)
+		if(!captureElement?.current) {
+			return
+		}
+		await html2canvas(captureElement.current)
 		.then(canvas => {
 			document.body.appendChild(canvas);
 		})
@@ -60,6 +79,11 @@ function App() {
 				/>
 			</div>
 			<div className={styles.canvasEditor}>
+				<div className={styles.editorItem}>
+					<EditBackground
+						onChange={handleChangeBackground}
+					/>
+				</div>
 				<div className={styles.editorItem}>
 					<button onClick={handleCapture}>capture</button>
 				</div>
