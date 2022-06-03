@@ -1,17 +1,18 @@
-import { useMemo, useCallback, useRef } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import Wordcloud from 'react-d3-cloud';
 
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,
 	drawRef?: React.MutableRefObject<HTMLDivElement>,
 	words:string[],
+	font?:string,
 	valueMap?: (value:number)=>number
 }) => {
 	interface Datum {
 		text: string,
 		value: number
 	}
-	const { autoUpdate, drawRef, words, valueMap=v=>v*100 } = prop
+	const { autoUpdate, drawRef, words, font, valueMap=v=>v*100 } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	drawRef.current = innerRef.current
 
@@ -36,7 +37,7 @@ const MyWordcloud = (prop:{
 			...w,
 			value: valueMap(w.value)
 		}))
-	}, [words, valueMap, autoUpdate])
+	}, [words, font, valueMap, autoUpdate])
 	dataRef.current = data
 	return (<>
 		<div
@@ -46,6 +47,7 @@ const MyWordcloud = (prop:{
 				data={dataRef?.current}
 				width={512}
 				height={512}
+				font={font || 'sanf-serif'}
 			/>
 		</div>
 	</>);

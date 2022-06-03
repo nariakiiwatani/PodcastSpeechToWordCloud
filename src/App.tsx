@@ -6,6 +6,7 @@ import { Word } from './libs/Words';
 import WordFilters from './components/WordFilters';
 import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
+import { useFontList } from './libs/FontList';
 
 function App() {
 	const [text, setText] = useState('')
@@ -18,6 +19,8 @@ function App() {
 	const handleFilter = useCallback((allowed: boolean[]) => {
 		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
 	}, [tokens]);
+	const [font, setFont] = useState('sans-serif')
+	const fontList = useFontList(font)
 	const [sizeOffset, setSizeOffset] = useState(0)
 	const [sizeMult, setSizeMult] = useState(100)
 	const sizeMapFunction = useCallback((value: number) => {
@@ -65,6 +68,18 @@ function App() {
 				/>
 			</div>
 			<div className={styles.canvasEditor}>
+				<div className={styles.editorItem}>
+					<p className={styles.heading3}>フォント</p>
+					<select
+						className={styles.border}
+						value={font}
+						onChange={(e) => setFont(e.target.value)}
+					>
+						{fontList.map(font => (
+							<option key={font} value={font}>{font}</option>
+						))}
+					</select>
+				</div>
 				<div className={styles.editorItem}>
 					<p className={styles.heading3}>文字サイズ</p>
 					<div>
@@ -119,6 +134,7 @@ function App() {
 					autoUpdate={autoUpdate}	
 					drawRef={captureElement}
 					words={words}
+					font={font}
 					valueMap={sizeMapFunction}
 				/>
 			</div>
@@ -179,7 +195,7 @@ const styles = {
 	text-slate-600
 	font-semibold
 	rounded-xl
-	p-4
+	p-2
 	items-center
 	border-2
 	`,
