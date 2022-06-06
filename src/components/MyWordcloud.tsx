@@ -39,7 +39,7 @@ const MyWordcloud = (prop:{
 			...w,
 			value: valueMap(w.value)
 		}))
-	}, [words, font, valueMap, autoUpdate])
+	}, [width, height, words, font, valueMap, autoUpdate])
 	dataRef.current = data
 	return (<>
 		<div
@@ -47,8 +47,8 @@ const MyWordcloud = (prop:{
 		>
 			<Wordcloud
 				data={dataRef?.current}
-				width={width}
-				height={height}
+				width={width/window.devicePixelRatio}
+				height={height/window.devicePixelRatio}
 				font={font || 'sanf-serif'}
 			/>
 		</div>

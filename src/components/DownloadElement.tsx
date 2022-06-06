@@ -13,8 +13,8 @@ const DownloadElement = (prop:{
 			return
 		}
 		await html2canvas(element.current, {
-			width,
-			height,
+			width:width/window.devicePixelRatio,
+			height:height/window.devicePixelRatio,
 		})
 		.then(canvas => {
 			let link = document.createElement("a");

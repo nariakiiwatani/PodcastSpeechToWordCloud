@@ -12,31 +12,39 @@ const EditSize2d = (props: {
 	onChange: (width: number, height: number) => void
 }) => {
 	const { width, height, onChange } = props
-	const [keepAspectRatio, setKeepAspectRatio] = useState(false)
+	const [widthInput, setWidthInput] = useState(width)
+	const [heightInput, setHeightInput] = useState(height)
+	const [keepAspectRatio, setKeepAspectRatio] = useState(true)
 	const [aspectRatioToKeep, setAspectRatioToKeep] = useState(width/height)
 	const handleWidthChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		if(!e.target.validity.valid || !e.target.value) return
 		const value = parseInt(e.target.value)
-		const size = [value, height]
+		setWidthInput(value)
+		const size = [value, heightInput]
 		if (keepAspectRatio) {
-			size[1] = Math.round(value / aspectRatioToKeep)
+			setHeightInput(Math.round(value / aspectRatioToKeep))
 		}
-		onChange(size[0], size[1])
-	}, [keepAspectRatio, aspectRatioToKeep, onChange])
+//		onChange(size[0], size[1])
+	}, [keepAspectRatio, aspectRatioToKeep, heightInput])
 	const handleHeightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		if(!e.target.validity.valid || !e.target.value) return
 		const value = parseInt(e.target.value)
-		const size = [width, value]
+		setHeightInput(value)
+		const size = [widthInput, value]
 		if (keepAspectRatio) {
-			size[0] = Math.round(value * aspectRatioToKeep)
+			setWidthInput(Math.round(value * aspectRatioToKeep))
 		}
-		onChange(size[0], size[1])
-	}, [keepAspectRatio, aspectRatioToKeep, onChange])
+//		onChange(size[0], size[1])
+	}, [keepAspectRatio, aspectRatioToKeep, widthInput])
 	const handleKeepAspectRatioChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.checked
 		setKeepAspectRatio(value)
-		setAspectRatioToKeep(width/height)
-	}, [width, height])
+		setAspectRatioToKeep(widthInput/heightInput)
+	}, [widthInput, heightInput])
+	const decide = useCallback(() => {
+		onChange(widthInput, heightInput)
+	}, [widthInput, heightInput, onChange])
 	const aspectRatioStr = useMemo(() => {
-		// calculate aspect ratio in rational integer
 		const gcd = (a: number, b: number) => {
 			if (b === 0) {
 				return a
@@ -45,7 +53,7 @@ const EditSize2d = (props: {
 		}
 		const g = gcd(width, height)
 		return `${width/g} : ${height/g}`
-	}, [width, height])
+	}, [keepAspectRatio])
 	return (<>
 		<div>
 			<label>
@@ -62,9 +70,12 @@ const EditSize2d = (props: {
 			<div>
 				<label htmlFor='width'>X: </label>
 				<input
-					type="number"
-					value={width}
+					pattern='[1-9][0-9]*'
+					type="text"
+					value={widthInput}
 					onChange={handleWidthChange}
+					onBlur={decide}
+					onKeyDown={(e) => e.key === 'Enter' && decide()}
 					name="width"
 					min={4}
 				/>
@@ -72,9 +83,12 @@ const EditSize2d = (props: {
 			<label>
 				<label htmlFor='height'>Y: </label>
 				<input
-					type="number"
-					value={height}
+					pattern='[1-9][0-9]*'
+					type="text"
+					value={heightInput}
 					onChange={handleHeightChange}
+					onBlur={decide}
+					onKeyDown={(e) => e.key === 'Enter' && decide()}
 					name="height"
 					min={4}
 				/>
