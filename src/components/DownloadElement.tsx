@@ -4,13 +4,18 @@ import html2canvas from 'html2canvas';
 const DownloadElement = (prop:{
 	src: React.RefObject<HTMLElement>
 	children: React.ReactNode
+	width: number
+	height: number
 }) => {
-	const { src:element, children } = prop
+	const { src:element, width, height, children } = prop
 	const handleCapture = useCallback(async () => {
 		if(!element?.current) {
 			return
 		}
-		await html2canvas(element.current)
+		await html2canvas(element.current, {
+			width,
+			height,
+		})
 		.then(canvas => {
 			let link = document.createElement("a");
 			link.href = canvas.toDataURL();

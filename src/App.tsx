@@ -7,6 +7,7 @@ import WordFilters from './components/WordFilters';
 import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
 import { useFontList } from './libs/FontList';
+import EditSize2d from './components/EditSize';
 
 function App() {
 	const [text, setText] = useState('')
@@ -28,6 +29,10 @@ function App() {
 	}, [sizeMult, sizeOffset])
 	const captureElement = useRef<HTMLDivElement>(null)
 	const [autoUpdate, setAutoUpdate] = useState(true)
+	const [imageSize, setImageSize] = useState([512,512])
+	const handleChangeImageSize = useCallback((width: number, height: number) => {
+		setImageSize([width, height])
+	}, [setImageSize])
 
 	return (
 		<div className={styles.app}>
@@ -115,8 +120,18 @@ function App() {
 					/>
 				</div>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>画像サイズ</p>
+					<EditSize2d 
+						width={imageSize[0]}
+						height={imageSize[1]}
+						onChange={handleChangeImageSize}
+					/>
+				</div>
+				<div className={styles.editorItem}>
 					<DownloadElement
 						src={captureElement}
+						width={imageSize[0]}
+						height={imageSize[1]}
 					>
 						<button className={styles.downloadButton}>画像保存</button>
 					</DownloadElement>
@@ -134,6 +149,8 @@ function App() {
 				<MyWordCloud
 					autoUpdate={autoUpdate}	
 					drawRef={captureElement}
+					width={imageSize[0]}
+					height={imageSize[1]}
 					words={words}
 					font={font}
 					valueMap={sizeMapFunction}

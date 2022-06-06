@@ -4,6 +4,8 @@ import Wordcloud from 'react-d3-cloud';
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,
 	drawRef?: React.MutableRefObject<HTMLDivElement>,
+	width:number,
+	height:number,
 	words:string[],
 	font?:string,
 	valueMap?: (value:number)=>number
@@ -12,7 +14,7 @@ const MyWordcloud = (prop:{
 		text: string,
 		value: number
 	}
-	const { autoUpdate, drawRef, words, font, valueMap=v=>v*100 } = prop
+	const { width, height, autoUpdate, drawRef, words, font, valueMap=v=>v*100 } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	drawRef.current = innerRef.current
 
@@ -45,8 +47,8 @@ const MyWordcloud = (prop:{
 		>
 			<Wordcloud
 				data={dataRef?.current}
-				width={512}
-				height={512}
+				width={width}
+				height={height}
 				font={font || 'sanf-serif'}
 			/>
 		</div>
