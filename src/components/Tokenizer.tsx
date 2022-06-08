@@ -9,7 +9,8 @@ export const Tokenizer = (prop:{
 	const {text, onResult} = prop
 	const [useBaseForm, setUseBaseForm] = useState(false)
 	const tokens = useTokenizer(text, {
-		useBaseForm
+		useBaseForm,
+		dicPath: 'dict',
 	})
 	useEffect(() => {
 		onResult(tokens)
