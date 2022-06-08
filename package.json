@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "webpack serve --open --config webpack.dev.ts",
+    "prebuild": "rimraf dist",
     "build": "webpack --config webpack.prod.ts",
-    "prebuild": "rimraf dist"
+	"predeploy": "yarn build",
+	"deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.4",

@@ -1,7 +1,9 @@
 # Podcast Speech to WordCloud
 ポッドキャストなどの音声ファイルからワードクラウドを作成します。エピソードのサムネイルなどの作成にも使えます。
 
-# How to use
+# 使ってみる
+https://nariakiiwatani.github.io/PodcastSpeechToWordCloud/  
+
 
 
 ---
