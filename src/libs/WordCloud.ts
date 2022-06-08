@@ -17,7 +17,7 @@ export const useWordCloud = (props:{
 		WordCloud(elements, {
 			list: data,
 			gridSize: 8,
-//			weightFactor:(v)=>v/2,
+			weightFactor,
 			fontFamily: font,
 			fontWeight: 'normal',
 			color: 'random-dark',

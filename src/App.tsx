@@ -25,7 +25,7 @@ function App() {
 	const [sizeOffset, setSizeOffset] = useState(0)
 	const [sizeMult, setSizeMult] = useState(100)
 	const sizeMapFunction = useCallback((value: number) => {
-		return value * sizeMult + sizeOffset
+		return (value + sizeOffset/10) * sizeMult/100
 	}, [sizeMult, sizeOffset])
 	const captureElement = useRef<HTMLDivElement>(null)
 	const [autoUpdate, setAutoUpdate] = useState(true)

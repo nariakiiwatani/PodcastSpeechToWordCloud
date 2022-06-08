@@ -46,6 +46,7 @@ const MyWordcloud = (prop:{
 			ref={innerRef}
 			style={{
 				minWidth: '100%',
+				maxWidth: 'max-content',
 				width: `${width}px`,
 				aspectRatio: `${width}/${height}`,
 			}}
