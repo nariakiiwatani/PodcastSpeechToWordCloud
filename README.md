@@ -1,46 +1,45 @@
-# Getting Started with Create React App
+# Podcast Speech to WordCloud
+ポッドキャストなどの音声ファイルからワードクラウドを作成します。エピソードのサムネイルなどの作成にも使えます。
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# How to use
 
-## Available Scripts
 
-In the project directory, you can run:
+---
+> 以下は開発者向けドキュメントです
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# ビルド方法
+## 音声認識モデルの配置
+https://alphacephei.com/vosk/models
+こちらから`Japanese`のモデルをDLして、解凍せずに`public/models/`に配置してください。
+```
+public/models
+└── vosk-model-small-ja-0.22.zip
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 辞書ファイルの配置
+https://github.com/takuyaa/kuromoji.js/tree/master/dict
+こちらから辞書ファイル一式をDLして`public/dict/`に配置してください
+```
+public/dict
+├── base.dat.gz
+├── cc.dat.gz
+├── check.dat.gz
+├── tid.dat.gz
+├── tid_map.dat.gz
+├── tid_pos.dat.gz
+├── unk.dat.gz
+├── unk_char.dat.gz
+├── unk_compat.dat.gz
+├── unk_invoke.dat.gz
+├── unk_map.dat.gz
+└── unk_pos.dat.gz
+```
 
-### `npm test`
+## ビルド
+`package.json`を参照のうえ、`yarn dev`や`yarn build`を実行してください
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+# ライセンス
+This software includes the work that is distributed in the Apache License 2.0.
