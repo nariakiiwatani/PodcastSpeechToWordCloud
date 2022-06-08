@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createModel, KaldiRecognizer, Model } from 'vosk-browser'
+import path from 'path-browserify'
 
 interface VoskResult {
 	result: Array<{
@@ -9,9 +10,10 @@ interface VoskResult {
 	  word: string;
 	}>;
 	text: string;
-  }
+}
   
-const MODEL_PATH = "models/vosk-model-small-ja-0.22.zip"
+const BASE_DIR = process?.env?.PUBLIC_URL || '.'
+const MODEL_PATH = path.resolve(BASE_DIR, 'models/vosk-model-small-ja-0.22.zip')
 const Speech2Text = (prop: {
 	onSentence?: (text: string) => void;
 	onResult?: (text: string) => void;

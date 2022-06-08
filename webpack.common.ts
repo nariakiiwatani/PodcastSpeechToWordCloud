@@ -2,6 +2,7 @@ import path from 'path';
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack')
 
 module.exports = {
     entry: './src/index.tsx',
@@ -14,7 +15,13 @@ module.exports = {
 			patterns: [
 	            { from: 'public', to: './' }
     	    ]
-		})
+		}),
+		new webpack.ProvidePlugin({
+			process: 'process/browser',
+		}),
+		new webpack.DefinePlugin({
+			'process.env': JSON.stringify(process.env)
+		 }),
 	],
     module: {
         rules: [

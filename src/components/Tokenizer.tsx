@@ -1,6 +1,9 @@
 import { useTokenizer } from '../libs/Tokenize';
 import { useState, useEffect, useMemo } from 'react'
 import { Word } from '../libs/Words'
+import path from 'path-browserify';
+
+const BASE_DIR = process?.env?.PUBLIC_URL || '.'
 
 export const Tokenizer = (prop:{
 	text: string,
@@ -10,7 +13,7 @@ export const Tokenizer = (prop:{
 	const [useBaseForm, setUseBaseForm] = useState(false)
 	const tokens = useTokenizer(text, {
 		useBaseForm,
-		dicPath: 'dict',
+		dicPath: path.resolve(BASE_DIR, 'dict'),
 	})
 	useEffect(() => {
 		onResult(tokens)
