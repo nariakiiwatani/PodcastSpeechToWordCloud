@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import html2canvas from 'html2canvas';
+import { toCanvas } from 'html-to-image';
 
 const DownloadElement = (prop:{
 	src: React.RefObject<HTMLElement>
@@ -12,9 +12,10 @@ const DownloadElement = (prop:{
 		if(!element?.current) {
 			return
 		}
-		await html2canvas(element.current, {
-			width:width/window.devicePixelRatio,
-			height:height/window.devicePixelRatio,
+		await toCanvas(element.current, {
+			canvasWidth: width,
+			canvasHeight: height,
+			pixelRatio: 1,
 		})
 		.then(canvas => {
 			let link = document.createElement("a");
