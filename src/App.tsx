@@ -33,7 +33,8 @@ function App() {
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
 	}, [setImageSize])
-
+	const handleRotateFuncChange = useCallback((rotateFunc: (word: Word) => number) => {
+	}, [])
 	return (
 		<div className={styles.app}>
 			<div className={styles.wordEditor}>

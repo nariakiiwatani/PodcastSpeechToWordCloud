@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef } from 'react';
-import Wordcloud from 'react-d3-cloud';
+import { useWordCloud } from '../libs/WordCloud';
 
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,
@@ -10,13 +10,11 @@ const MyWordcloud = (prop:{
 	font?:string,
 	valueMap?: (value:number)=>number
 }) => {
-	interface Datum {
-		text: string,
-		value: number
-	}
+	type Datum = [string, number]
 	const { width, height, autoUpdate, drawRef, words, font, valueMap=v=>v*100 } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	drawRef.current = innerRef.current
+	const cloudRef = useRef<HTMLDivElement>()
 
 	const dataRef = useRef<Datum[]>()
 	const data:Datum[] = useMemo(() => {
@@ -24,35 +22,48 @@ const MyWordcloud = (prop:{
 			return dataRef?.current
 		}
 		return words.reduce((acc, word) => {
-			const found = acc.find(({text})=>word===text)
+			const found = acc.find(([text,_])=>word===text)
 			if(found) {
-				found.value++
+				found[1]++
 			} else {
-				acc.push({
-					text:word,
-					value: 1
-				})
+				acc.push([word, 1])
 			}
 			return acc
 		}, new Array<Datum>())
-		.map(w=> ({
-			...w,
-			value: valueMap(w.value)
-		}))
+		.map(([w,v])=> ([w, valueMap(v)]))
 	}, [width, height, words, font, valueMap, autoUpdate])
 	dataRef.current = data
+	const [isWordCloudSupported] = useWordCloud({
+		elements: cloudRef.current,
+		data,
+		width,
+		height,
+		font: font || 'sanf-serif',
+		weightFactor:valueMap,
+	})
 	return (<>
 		<div
 			ref={innerRef}
+			style={{
+				minWidth: '100%',
+				width: `${width}px`,
+				aspectRatio: `${width}/${height}`,
+			}}
 		>
-			<Wordcloud
-				data={dataRef?.current}
-				width={width/window.devicePixelRatio}
-				height={height/window.devicePixelRatio}
-				font={font || 'sanf-serif'}
-			/>
+			{isWordCloudSupported && <div
+				ref={cloudRef}
+				className={styles.full}
+			/>}
 		</div>
 	</>);
 }
 
 export default MyWordcloud
+
+
+const styles = {
+	full: `
+	w-full
+	h-full
+	`
+}
