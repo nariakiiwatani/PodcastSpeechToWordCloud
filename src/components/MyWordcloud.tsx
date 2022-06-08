@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useWordCloud } from '../libs/WordCloud';
 
 const MyWordcloud = (prop:{
@@ -8,10 +8,11 @@ const MyWordcloud = (prop:{
 	height:number,
 	words:string[],
 	font?:string,
+	minFontSize:number,
 	valueMap?: (value:number)=>number
 }) => {
 	type Datum = [string, number]
-	const { width, height, autoUpdate, drawRef, words, font, valueMap=v=>v*100 } = prop
+	const { width, height, autoUpdate, drawRef, words, font, minFontSize, valueMap=v=>v } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	drawRef.current = innerRef.current
 	const cloudRef = useRef<HTMLDivElement>()
@@ -39,6 +40,7 @@ const MyWordcloud = (prop:{
 		width,
 		height,
 		font: font || 'sanf-serif',
+		minFontSize,
 		weightFactor:valueMap,
 	})
 	return (<>

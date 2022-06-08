@@ -25,8 +25,8 @@ function App() {
 	const [sizeOffset, setSizeOffset] = useState(0)
 	const [sizeMult, setSizeMult] = useState(100)
 	const sizeMapFunction = useCallback((value: number) => {
-		return (value + sizeOffset/10) * sizeMult/100
-	}, [sizeMult, sizeOffset])
+		return value * sizeMult + sizeOffset
+	}, [sizeOffset, sizeMult])
 	const captureElement = useRef<HTMLDivElement>(null)
 	const [autoUpdate, setAutoUpdate] = useState(true)
 	const [imageSize, setImageSize] = useState([512,512])
@@ -95,7 +95,7 @@ function App() {
 						<input
 							type='range'
 							min='0'
-							max='1000'
+							max='100'
 							value={sizeOffset}
 							onChange={(e) => setSizeOffset(parseInt(e.target.value))}
 							name='sizeOffset'
@@ -107,9 +107,10 @@ function App() {
 						<input
 							type='range'
 							min='1'
-							max='1000'
+							max='10'
+							step='0.01'
 							value={sizeMult}
-							onChange={(e) => setSizeMult(parseInt(e.target.value))}
+							onChange={(e) => setSizeMult(Number(e.target.value))}
 							name='sizeMult'
 						/>
 					</div>
@@ -154,6 +155,7 @@ function App() {
 					height={imageSize[1]}
 					words={words}
 					font={font}
+					minFontSize={sizeOffset}
 					valueMap={sizeMapFunction}
 				/>
 			</div>

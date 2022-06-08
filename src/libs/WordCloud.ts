@@ -9,9 +9,10 @@ export const useWordCloud = (props:{
 	width: number,
 	height: number,
 	font: string,
+	minFontSize:number,
 	weightFactor: (value: number) => number,
 }) => {
-	const { elements, data, width, height, font, weightFactor } = props;
+	const { elements, data, width, height, font, minFontSize, weightFactor } = props;
 	useEffect(() => {
 		if(!elements) { return }
 		WordCloud(elements, {
@@ -20,6 +21,7 @@ export const useWordCloud = (props:{
 			weightFactor,
 			fontFamily: font,
 			fontWeight: 'normal',
+			minSize: minFontSize,
 			color: 'random-dark',
 			backgroundColor: 'rgba(0,0,0,0)',
 			origin: [width / 2, height / 2],
@@ -28,6 +30,6 @@ export const useWordCloud = (props:{
 			maskColor: '#fff',
 			shape:'square'
 		});
-	}, [elements, data, width, height, font, weightFactor]);
+	}, [elements, data, width, height, font, minFontSize, weightFactor]);
 	return [WordCloud.isSupported];
 }
