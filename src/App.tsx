@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Tokenizer, NoTokenizer } from './components/Tokenizer';
 import MyWordCloud from './components/MyWordcloud';
 import Speech2Text from './components/Speech2Text';
@@ -35,8 +35,54 @@ function App() {
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
 	}, [setImageSize])
+
+	const [useBackground, setUseBackground] = useState(false)
+	const [backgroundStyle, setBackgroundStyle] = useState({
+		backgroundColor: '#fff',
+		backgroundImage: 'none',
+		backgroundSize: 'cover'
+	})
+	const handleBackgroundChange = useCallback(({color,image}:{color?:{r,g,b,a}, image?: string}) => {
+		if(color) {
+			const {r,g,b,a} = color
+			setBackgroundStyle(prev => ({
+				...prev,
+				backgroundColor: `rgba(${r},${g},${b},${a})`,
+				backgroundImage: 'none'
+			}))
+		}
+		else if(image) {
+			setBackgroundStyle(prev => ({
+				...prev,
+				backgroundImage: `url(${image})`
+			}))
+		}
+		else {
+			setBackgroundStyle(prev => ({
+				...prev,
+				backgroundImage: `none`,
+				backgroundColor: `#fff`
+			}))
+		}
+	}, [setBackgroundStyle])
+	useEffect(() => {
+		if(!captureElement?.current) {
+			return
+		}
+		const style = captureElement.current.style
+		if(useBackground) {
+			Object.entries(backgroundStyle).forEach(([key, value]) => {
+				style[key] = value
+			})
+		}
+		else {
+			style.backgroundImage = 'none'
+			style.backgroundColor = '#fff'
+		}
+	}, [captureElement?.current, useBackground, backgroundStyle])
+
 	const [mask, setMask] = useState<HTMLCanvasElement>()
-	const [maskEnabled, setMaskEnabled] = useState(true)
+	const [maskEnabled, setMaskEnabled] = useState(false)
 	return (
 		<div className={styles.app}>
 			<div className={styles.wordEditor}>
@@ -130,12 +176,19 @@ function App() {
 						onResult={setMask}
 					/>
 				</TreeNode>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>背景を設定</p>
+				<TreeNode
+					title="背景を設定"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={useBackground}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+					onChangeEnabled={setUseBackground}
+				>				
 					<EditBackground
-						element={captureElement}
+						onChange={handleBackgroundChange}
 					/>
-				</div>
+				</TreeNode>
 				<div className={styles.editorItem}>
 					<p className={styles.heading3}>画像サイズ</p>
 					<EditSize2d 

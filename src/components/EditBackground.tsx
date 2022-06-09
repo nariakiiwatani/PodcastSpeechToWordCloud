@@ -45,45 +45,27 @@ const EditImage = (prop:{
 }
 
 const EditBackground = (prop:{
-	element: React.RefObject<HTMLElement>
 	onChange?: ({color,image}:{color?:{r,g,b,a}, image?: string}) => void
 }) => {
-	const { element, onChange } = prop
-	const [color, setColor] = useState({r:255,g:255,b:255,a:1})
+	const { onChange } = prop
+	const [color, setColor] = useState({r:255,g:255,b:255,a:255})
 	const [image, setImage] = useState('')
-	const [selection, setSelection] = useState('none')
+	const [selection, setSelection] = useState('color')
 	useEffect(() => {
-		if(!element?.current) {
-			return
-		}
-		const style = element.current.style
-		if(selection === 'none') {
-			style.backgroundImage = ''
-			style.backgroundColor = ''
-		}
-		else if(selection === 'color') {
-			const {r,g,b,a} = color
-			style.backgroundColor = `rgba(${r},${g},${b},${a})`
-			style.backgroundImage = ''
-		}
-		else if(selection === 'image') {
-			style.backgroundImage = `url(${image})`
-			style.backgroundSize = 'cover'
-		}
 		setSelection(selection)
 		if(onChange) {
 			selection === 'none' && onChange({})
 			selection === 'color' && onChange({color})
 			selection === 'image' && onChange({image})
 		}
-	}, [color, image, selection, element?.current])
+	}, [color, image, selection])
 	
 	return (<>
-		<input type="radio" name="background" id="none" defaultChecked
+		{/* <input type="radio" name="background" id="none" defaultChecked
 			onChange={e=>setSelection(e.target.id)}
 			/>
-		<label htmlFor="none">なし</label>
-		<input type="radio" name="background" id="color"
+		<label htmlFor="none">なし</label> */}
+		<input type="radio" name="background" id="color" defaultChecked
 			onChange={e=>setSelection(e.target.id)}
 		/>
 		<label htmlFor="color">Color</label>
