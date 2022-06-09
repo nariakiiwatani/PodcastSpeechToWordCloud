@@ -24,7 +24,7 @@ export const Tokenizer = (prop:{
 			onChange={(e) => setUseBaseForm(e.target.checked)}
 			name='useBaseForm'
 		/>
-		<label htmlFor='useBaseForm'>動詞と形容詞は基本形を使用する</label>
+		<label htmlFor='useBaseForm'>動詞と形容詞は基本形に変換する</label>
 		<div>
 			<p>{`(${text.length} characters, ${tokens.length} tokens)`}</p>
 		</div>

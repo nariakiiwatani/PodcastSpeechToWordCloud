@@ -1,9 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Tokenizer, NoTokenizer } from './components/Tokenizer';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { Tokenizer } from './components/Tokenizer';
 import MyWordCloud from './components/MyWordcloud';
 import Speech2Text from './components/Speech2Text';
 import { Word } from './libs/Words';
-import WordFilters from './components/WordFilters';
+import { WordClassFilter } from './components/WordClassFilter'
+import { WordLengthRangeFilter, WordFreqRangeFilter } from './components/WordRangeFilter'
+import { WordDenyFilter } from './components/WordDenyFilter'
 import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
 import { useFontList } from './libs/FontList';
@@ -12,26 +14,69 @@ import EditMask from './components/EditMask';
 import TreeNode from './components/TreeNode';
 import useBackground from './libs/useBackground';
 
+const useFilterResults = (
+	defaultEnabled: boolean
+) => {
+	const [enabled, updateEnabled] = useState<boolean>(defaultEnabled);
+	const [result, updateResult] = useState<boolean[]>([]);
+	const passResult = useMemo(() => new Array<boolean>(result.length).fill(true), [result.length]);
+	const [resultCache, updateResultCache] = useState<boolean[]>(()=>[...passResult]);
+	const setEnabled = useCallback((enabled:boolean) => {
+		updateEnabled(enabled)
+		updateResult(enabled ? resultCache : passResult)
+	}, [resultCache, passResult])
+	const setResult = useCallback((result:boolean[]) => {
+		updateResultCache(result)
+		if(enabled) updateResult(result)
+	}, [enabled])
+
+	return {enabled, result, setEnabled, setResult}
+}
+
 function App() {
 	const [text, setText] = useState('')
 	const addText = useCallback((text: string) => {
 		setText(prev=>[prev,text].join('\n'))
 	}, [setText])
+
 	const [useTokenizer, setUseTokenizer] = useState(true)
 	const [tokens, setTokens] = useState<Word[]>([])
 	const [words, setWords] = useState<string[]>([])
-	const handleFilter = useCallback((allowed: boolean[]) => {
-		setWords(tokens.filter((_, i) => allowed[i]).map(token => token.word))
-	}, [tokens]);
+
+	const filters = {
+		length: useFilterResults(true),
+		freq: useFilterResults(true),
+		class: useFilterResults(true),
+		words: useFilterResults(true)
+	}
+
+	useEffect(() => {
+		const filterAllAnd = (a: boolean[], b: boolean[]) => {
+			return a.map((v, i) => v && (i < b.length ? b[i] : true))
+		}
+		const filterAll = ((filters: {[key:string]:{result:boolean[]}}) => {
+			const required_length = tokens.length
+			return Object.keys(filters).reduce((acc, key) => {
+				return filterAllAnd(acc, filters[key].result)
+			}
+			, new Array<boolean>(required_length).fill(true))
+		})(filters)
+		setWords(tokens.filter((_, i) => filterAll[i]).map(token => token.word))
+	}, [tokens, filters.length.result, filters.freq.result, filters.class.result, filters.words.result])
+
 	const [font, setFont] = useState('sans-serif')
 	const fontList = useFontList(font)
+
 	const [sizeOffset, setSizeOffset] = useState(0)
 	const [sizeMult, setSizeMult] = useState(1)
 	const sizeMapFunction = useCallback((value: number) => {
 		return value * sizeMult + sizeOffset
 	}, [sizeOffset, sizeMult])
+
 	const captureElement = useRef<HTMLDivElement>(null)
+
 	const [autoUpdate, setAutoUpdate] = useState(true)
+
 	const [imageSize, setImageSize] = useState([512,512])
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
@@ -50,46 +95,102 @@ function App() {
 
 	const [mask, setMask] = useState<HTMLCanvasElement>()
 	const [maskEnabled, setMaskEnabled] = useState(false)
+
 	return (
 		<div className={styles.app}>
-			<div className={styles.wordEditor}>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>音声ファイルを選択</p>
+			<div className={styles.editorCol}>
+				<TreeNode
+					title="音声ファイルを選択"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
 					<Speech2Text onSentence={addText} onError={console.error} />
-				</div>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>文字起こし結果</p>
+				</TreeNode>
+				<TreeNode
+					title="文字起こし結果"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
 					<textarea
 						className={styles.border}
 						value={text}
 						onChange={(e) => setText(e.target.value)}
 						placeholder='直接入力もできます'
 					/>
-				</div>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>形態素解析を使用</p>
-					<input
-						type='checkbox'
-						checked={useTokenizer}
-						onChange={(e) => setUseTokenizer(e.target.checked)}
-						name='useTokenizer'
-					/>
-					<label htmlFor='useTokenizer'>有効/無効</label>
-					{useTokenizer
-						? <Tokenizer text={text} onResult={setTokens} />
-						: <NoTokenizer text={text} onResult={setTokens} />
-					}
-				</div>
-				<WordFilters
+				</TreeNode>
+				<TreeNode
+					title="形態素解析"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={useTokenizer}
+					onChangeEnabled={setUseTokenizer}
 					className={styles.editorItem}
-					filterTypes={useTokenizer
-						? ['class', 'length', 'freq', 'words']
-						: ['length', 'freq', 'words']}
-					words={tokens}
-					onResult={handleFilter}
-				/>
+					titleClass={styles.heading3}
+				>
+					<Tokenizer text={text} onResult={setTokens} />
+					<TreeNode
+						title="品詞でフィルタ"
+						defaultOpen={true}
+						showSwitch={true}
+						defaultEnable={true}
+						onChangeEnabled={filters.class.setEnabled}
+						className={styles.editorItem}
+						titleClass={styles.heading3}
+					>				
+						<WordClassFilter
+							words={tokens}
+							onResult={filters.class.setResult}
+						/>
+					</TreeNode>
+				</TreeNode>
+				<TreeNode
+					title="語の長さでフィルタ"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={true}
+					onChangeEnabled={filters.length.setEnabled}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
+					<WordLengthRangeFilter
+						words={tokens}
+						onResult={filters.length.setResult}
+					/>
+				</TreeNode>
+				<TreeNode
+					title="出現回数でフィルタ"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={true}
+					onChangeEnabled={filters.freq.setEnabled}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
+					<WordFreqRangeFilter
+						words={tokens}
+						onResult={filters.freq.setResult}
+					/>
+				</TreeNode>
+				<TreeNode
+					title="除外語"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={true}
+					onChangeEnabled={filters.words.setEnabled}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
+					<WordDenyFilter
+						words={tokens}
+						onResult={filters.words.setResult}
+					/>
+				</TreeNode>
 			</div>
-			<div className={styles.canvasEditor}>
+			<div className={styles.editorCol}>
 				<TreeNode
 					title="フォント"
 					defaultOpen={true}
@@ -223,7 +324,7 @@ const styles = {
 	gap-4
 	border-2
 	`,
-	wordEditor : `
+	editorCol : `
 	flex
 	flex-col
 	basis-1/6
@@ -237,15 +338,6 @@ const styles = {
 	p-2
 	pb-8
 	border-b-2
-	`,
-	canvasEditor : `
-	flex
-	flex-col
-	basis-1/6
-	gap-4
-	p-2
-	m-1
-	border-2
 	`,
 	preview : `
 	flex-1

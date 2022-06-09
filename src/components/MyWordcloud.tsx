@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useWordCloud, useMaskCanvas } from '../libs/WordCloud';
+import { useWordCloud } from '../libs/WordCloud';
 
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,

@@ -5,7 +5,7 @@ import { WordClassFilter } from './WordClassFilter'
 import { WordLengthRangeFilter, WordFreqRangeFilter } from './WordRangeFilter'
 import { WordDenyFilter } from './WordDenyFilter'
 
-const WordFilter = (prop:{
+export const WordFilter = (prop:{
 	words: Word[],
 	type: FilterType,
 	onResult:(allowed: boolean[])=>void

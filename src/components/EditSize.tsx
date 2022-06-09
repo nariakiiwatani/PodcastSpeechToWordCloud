@@ -4,7 +4,7 @@
 //
 // Language: typescript
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 
 const EditSize2d = (props: {
 	width: number,
