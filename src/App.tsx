@@ -10,6 +10,7 @@ import { useFontList } from './libs/FontList';
 import EditSize2d from './components/EditSize';
 import EditMask from './components/EditMask';
 import TreeNode from './components/TreeNode';
+import useBackground from './libs/useBackground';
 
 function App() {
 	const [text, setText] = useState('')
@@ -36,50 +37,16 @@ function App() {
 		setImageSize([width, height])
 	}, [setImageSize])
 
-	const [useBackground, setUseBackground] = useState(false)
-	const [backgroundStyle, setBackgroundStyle] = useState({
-		backgroundColor: '#fff',
-		backgroundImage: 'none',
-		backgroundSize: 'cover'
-	})
-	const handleBackgroundChange = useCallback(({color,image}:{color?:{r,g,b,a}, image?: string}) => {
+	const background = useBackground(captureElement?.current, 'rgba(0,0,0,0')
+	const handleBackgroundChange = useCallback(({color,image}:{color:{r:number,g:number,b:number,a:number},image:string}) => {
 		if(color) {
 			const {r,g,b,a} = color
-			setBackgroundStyle(prev => ({
-				...prev,
-				backgroundColor: `rgba(${r},${g},${b},${a})`,
-				backgroundImage: 'none'
-			}))
+			background.setColor(`rgba(${r},${g},${b},${a})`)
 		}
-		else if(image) {
-			setBackgroundStyle(prev => ({
-				...prev,
-				backgroundImage: `url(${image})`
-			}))
+		if(image) {
+			background.setImage(image)
 		}
-		else {
-			setBackgroundStyle(prev => ({
-				...prev,
-				backgroundImage: `none`,
-				backgroundColor: `#fff`
-			}))
-		}
-	}, [setBackgroundStyle])
-	useEffect(() => {
-		if(!captureElement?.current) {
-			return
-		}
-		const style = captureElement.current.style
-		if(useBackground) {
-			Object.entries(backgroundStyle).forEach(([key, value]) => {
-				style[key] = value
-			})
-		}
-		else {
-			style.backgroundImage = 'none'
-			style.backgroundColor = '#fff'
-		}
-	}, [captureElement?.current, useBackground, backgroundStyle])
+	}, [background.setColor, background.setImage])
 
 	const [mask, setMask] = useState<HTMLCanvasElement>()
 	const [maskEnabled, setMaskEnabled] = useState(false)
@@ -180,10 +147,10 @@ function App() {
 					title="背景を設定"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={useBackground}
+					defaultEnable={background.enabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-					onChangeEnabled={setUseBackground}
+					onChangeEnabled={background.setEnabled}
 				>				
 					<EditBackground
 						onChange={handleBackgroundChange}
