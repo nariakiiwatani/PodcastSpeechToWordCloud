@@ -5,24 +5,24 @@ type Prop = {
 	title: string,
 	defaultOpen: boolean,
 	showSwitch: boolean,
-	defaultEnable: boolean,
+	defaultEnable?: boolean,
 	children: React.ReactNode,
 	className: string,
 	titleClass: string,
-	onChangeEnabled: (enabled: boolean) => void,
+	onChangeEnabled?: (enabled: boolean) => void,
 }
 
 const TreeNode = (prop:Prop) => {
-	const { title, defaultOpen, showSwitch, defaultEnable, children, className, titleClass, onChangeEnabled } = prop
+	const { title, defaultOpen, showSwitch, defaultEnable=true, children, className, titleClass, onChangeEnabled } = prop
 	const [open, setOpen] = useState(defaultOpen)
-	const [enable, setEnable] = useState(defaultEnable)
+	const [enable, setEnable] = useState<boolean>(defaultEnable)
 	const toggle = useCallback(() => {
 		setOpen(!open)
 	}
 	, [open])
 	const handleEnable = useCallback((checked:boolean) => {
 		setEnable(checked)
-		onChangeEnabled(checked)
+		onChangeEnabled && onChangeEnabled(checked)
 	}, [enable])
 	return (<>
 		<div className={className}>

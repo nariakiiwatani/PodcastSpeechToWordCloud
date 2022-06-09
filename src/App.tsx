@@ -90,8 +90,13 @@ function App() {
 				/>
 			</div>
 			<div className={styles.canvasEditor}>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>フォント</p>
+				<TreeNode
+					title="フォント"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
 					<select
 						className={styles.border}
 						value={font}
@@ -101,9 +106,14 @@ function App() {
 							<option key={font} value={font}>{font}</option>
 						))}
 					</select>
-				</div>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>文字サイズ</p>
+				</TreeNode>
+				<TreeNode
+					title="文字サイズ"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
 					<div>
 						<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
 						<br />
@@ -129,7 +139,7 @@ function App() {
 							name='sizeMult'
 						/>
 					</div>
-				</div>
+				</TreeNode>
 				<TreeNode
 					title="マスク画像を設定"
 					defaultOpen={true}
@@ -156,14 +166,19 @@ function App() {
 						onChange={handleBackgroundChange}
 					/>
 				</TreeNode>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>画像サイズ</p>
+				<TreeNode
+					title={`画像サイズ(${imageSize[0]}x${imageSize[1]})`}
+					defaultOpen={false}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>				
 					<EditSize2d 
 						width={imageSize[0]}
 						height={imageSize[1]}
 						onChange={handleChangeImageSize}
 					/>
-				</div>
+				</TreeNode>
 				<div className={styles.editorItem}>
 					<DownloadElement
 						src={captureElement}
