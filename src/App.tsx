@@ -9,6 +9,7 @@ import DownloadElement from './components/DownloadElement';
 import { useFontList } from './libs/FontList';
 import EditSize2d from './components/EditSize';
 import EditMask from './components/EditMask';
+import TreeNode from './components/TreeNode';
 
 function App() {
 	const [text, setText] = useState('')
@@ -35,9 +36,7 @@ function App() {
 		setImageSize([width, height])
 	}, [setImageSize])
 	const [mask, setMask] = useState<HTMLCanvasElement>()
-	const handleMaskImageChange = useCallback((canvas: HTMLCanvasElement) => {
-		setMask(canvas)
-	}, []);
+	const [maskEnabled, setMaskEnabled] = useState(true)
 	return (
 		<div className={styles.app}>
 			<div className={styles.wordEditor}>
@@ -118,12 +117,19 @@ function App() {
 						/>
 					</div>
 				</div>
-				<div className={styles.editorItem}>
-					<p className={styles.heading3}>マスク画像を設定</p>
+				<TreeNode
+					title="マスク画像を設定"
+					defaultOpen={true}
+					showSwitch={true}
+					defaultEnable={maskEnabled}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+					onChangeEnabled={setMaskEnabled}
+				>				
 					<EditMask
-						onResult={handleMaskImageChange}
+						onResult={setMask}
 					/>
-				</div>
+				</TreeNode>
 				<div className={styles.editorItem}>
 					<p className={styles.heading3}>背景を設定</p>
 					<EditBackground
@@ -160,7 +166,7 @@ function App() {
 				<MyWordCloud
 					autoUpdate={autoUpdate}	
 					resultRef={captureElement}
-					mask={mask}
+					mask={maskEnabled ? mask:undefined}
 					width={imageSize[0]}
 					height={imageSize[1]}
 					words={words}
