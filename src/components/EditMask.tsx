@@ -10,7 +10,8 @@ class MyCanvas extends HTMLCanvasElement {
 window.customElements.define('my-canvas', MyCanvas, {extends: 'canvas'});
 
 const useMaskCanvas = (
-	backgroundColor:{r:number,g:number,b:number,a:number}
+	backgroundColor:{r:number,g:number,b:number,a:number},
+	invert: boolean
 ) => {
 	const [original, setOriginal] = useState<HTMLImageElement>(null);
 	const [binary, setBinary] = useState<HTMLCanvasElement>(null);
@@ -26,34 +27,37 @@ const useMaskCanvas = (
 			};
 			image.src = url;
 		})
-		.then((img:HTMLImageElement) => {
-			setOriginal(img)
-			const canvas = document.createElement('canvas');
-			canvas.width = img.width
-			canvas.height = img.height
-			let ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0, img.width, img.height);
+		.then(setOriginal);
+	}
+	useEffect(() => {
+		if(!original) {
+			return;
+		}
+		const canvas = document.createElement('canvas');
+		canvas.width = original.width
+		canvas.height = original.height
+		let ctx = canvas.getContext('2d');
+		ctx.drawImage(original, 0, 0, original.width, original.height);
 
-			const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-			const newImageData = ctx.createImageData(imageData);
-			const [r,g,b,a] = [0,0,0,0]
-			for (let i = 0; i < imageData.data.length; i += 4) {
-			  if (imageData.data[i] > 128) {
+		const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		const newImageData = ctx.createImageData(imageData);
+		for(let i = 0; i < imageData.data.length; i += 4) {
+			if((imageData.data[i] > 128) !== invert) {
 				newImageData.data[i] = backgroundColor.r;
 				newImageData.data[i + 1] = backgroundColor.g;
 				newImageData.data[i + 2] = backgroundColor.b;
 				newImageData.data[i + 3] = backgroundColor.a;
-			  } else {
+			}
+			else {
 				newImageData.data[i] =
 				newImageData.data[i + 1] =
 				newImageData.data[i + 2] =
 				newImageData.data[i + 3] = 255;
-			  }
 			}
-			ctx.putImageData(newImageData, 0, 0);
-			setBinary(canvas)
-		});
-	}
+		}
+		ctx.putImageData(newImageData, 0, 0);
+		setBinary(canvas)
+	}, [original, invert])
 	const clear = () => {
 		const ctx = binary.getContext('2d');
 		ctx.clearRect(0, 0, binary.width, binary.height);
@@ -66,7 +70,8 @@ const EditMask = (props:{
 	backgroundColor?:{r:number,g:number,b:number,a:number}
 }) => {
 	const { onResult, backgroundColor={r:0,g:0,b:0,a:0} } = props
-	const { binary:canvas, original, load:loadMask, clear:clearMask } = useMaskCanvas(backgroundColor)
+	const [invert, setInvert] = useState(false);
+	const { binary:canvas, original, load:loadMask, clear:clearMask } = useMaskCanvas(backgroundColor, invert)
 	const divRef = useRef<HTMLDivElement>(null)
 	const originalRef = useRef<HTMLDivElement>(null)
 	const maskRef = useRef<HTMLDivElement>(null)
@@ -100,6 +105,10 @@ const EditMask = (props:{
 			}
 			reader.readAsDataURL(file)
 		}}/>
+		<input type="checkbox" checked={invert} onChange={(e)=>{
+			setInvert(e.target.checked)
+		}}/>
+		<label htmlFor="invert">反転</label>
 		<div ref={divRef}
 			className={`relative`}
 		>
