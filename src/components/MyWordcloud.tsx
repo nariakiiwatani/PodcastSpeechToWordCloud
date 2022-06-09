@@ -3,22 +3,20 @@ import { useWordCloud, useMaskCanvas } from '../libs/WordCloud';
 
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,
-	drawRef?: React.MutableRefObject<HTMLDivElement>,
+	resultRef?: React.MutableRefObject<HTMLDivElement>,
+	mask?: HTMLCanvasElement,
 	width:number,
 	height:number,
 	words:string[],
 	font?:string,
 	minFontSize:number,
 	valueMap?: (value:number)=>number
-	maskImage?: string,
 }) => {
 	type Datum = [string, number]
-	const { width, height, autoUpdate, drawRef, words, font, minFontSize, valueMap=v=>v, maskImage } = prop
+	const { width, height, autoUpdate, resultRef, words, font, minFontSize, valueMap=v=>v, mask } = prop
 	const innerRef = useRef<HTMLDivElement>()
-	drawRef.current = innerRef.current
+	resultRef.current = innerRef.current
 	const cloudRef = useRef<HTMLDivElement>()
-
-	const { canvas, load:loadMask, clear:clearMask } = useMaskCanvas()
 
 	const dataRef = useRef<Datum[]>()
 	const data:Datum[] = useMemo(() => {
@@ -39,7 +37,7 @@ const MyWordcloud = (prop:{
 	dataRef.current = data
 	const [isWordCloudSupported] = useWordCloud({
 		element: cloudRef.current,
-		mask: canvas,
+		mask,
 		data,
 		width,
 		height,
@@ -48,18 +46,6 @@ const MyWordcloud = (prop:{
 		weightFactor:valueMap,
 	})
 	return (<>
-	<input type="file" accept="image/*" onChange={(e)=>{
-		const file = e.target.files[0]
-		if(!file) {
-			clearMask()
-			return
-		}
-		const reader = new FileReader()
-		reader.onload = (e)=>{
-			loadMask(reader.result as string)
-		}
-		reader.readAsDataURL(file)
-	}}/>
 		<div
 			ref={innerRef}
 			style={{

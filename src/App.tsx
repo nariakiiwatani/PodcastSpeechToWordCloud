@@ -8,6 +8,7 @@ import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
 import { useFontList } from './libs/FontList';
 import EditSize2d from './components/EditSize';
+import EditMask from './components/EditMask';
 
 function App() {
 	const [text, setText] = useState('')
@@ -33,8 +34,10 @@ function App() {
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
 	}, [setImageSize])
-	const handleRotateFuncChange = useCallback((rotateFunc: (word: Word) => number) => {
-	}, [])
+	const [mask, setMask] = useState<HTMLCanvasElement>()
+	const handleMaskImageChange = useCallback((canvas: HTMLCanvasElement) => {
+		setMask(canvas)
+	}, []);
 	return (
 		<div className={styles.app}>
 			<div className={styles.wordEditor}>
@@ -116,6 +119,12 @@ function App() {
 					</div>
 				</div>
 				<div className={styles.editorItem}>
+					<p className={styles.heading3}>マスク画像を設定</p>
+					<EditMask
+						onResult={handleMaskImageChange}
+					/>
+				</div>
+				<div className={styles.editorItem}>
 					<p className={styles.heading3}>背景を設定</p>
 					<EditBackground
 						element={captureElement}
@@ -150,7 +159,8 @@ function App() {
 				<label htmlFor='autoUpdate'>自動更新</label>
 				<MyWordCloud
 					autoUpdate={autoUpdate}	
-					drawRef={captureElement}
+					resultRef={captureElement}
+					mask={mask}
 					width={imageSize[0]}
 					height={imageSize[1]}
 					words={words}
