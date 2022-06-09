@@ -43,7 +43,7 @@ const useBackground = (
 		updateEnabled(enabled)
 	}, [element, currentStyle, applyStyle])
 
-	return {enabled, setEnabled, setColor, setImage}
+	return {enabled, setEnabled, setColor, setImage }
 }
 
 export default useBackground

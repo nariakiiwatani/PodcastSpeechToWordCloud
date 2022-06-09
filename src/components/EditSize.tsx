@@ -4,37 +4,41 @@
 //
 // Language: typescript
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 
 const EditSize2d = (props: {
 	width: number,
 	height: number,
+	updateRatio?: boolean
 	onChange: (width: number, height: number) => void
 }) => {
-	const { width, height, onChange } = props
+	const { width, height, updateRatio=false, onChange } = props
 	const [widthInput, setWidthInput] = useState(width)
 	const [heightInput, setHeightInput] = useState(height)
 	const [keepAspectRatio, setKeepAspectRatio] = useState(true)
 	const [aspectRatioToKeep, setAspectRatioToKeep] = useState(width/height)
+	useEffect(() => {
+		setWidthInput(width)
+		setHeightInput(height)
+		if (updateRatio && keepAspectRatio) {
+			setAspectRatioToKeep(width/height)
+		}
+	}, [width, height, keepAspectRatio, updateRatio])
 	const handleWidthChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		if(!e.target.validity.valid || !e.target.value) return
 		const value = parseInt(e.target.value)
 		setWidthInput(value)
-		const size = [value, heightInput]
 		if (keepAspectRatio) {
 			setHeightInput(Math.round(value / aspectRatioToKeep))
 		}
-//		onChange(size[0], size[1])
 	}, [keepAspectRatio, aspectRatioToKeep, heightInput])
 	const handleHeightChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		if(!e.target.validity.valid || !e.target.value) return
 		const value = parseInt(e.target.value)
 		setHeightInput(value)
-		const size = [widthInput, value]
 		if (keepAspectRatio) {
 			setWidthInput(Math.round(value * aspectRatioToKeep))
 		}
-//		onChange(size[0], size[1])
 	}, [keepAspectRatio, aspectRatioToKeep, widthInput])
 	const handleKeepAspectRatioChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		const value = e.target.checked
@@ -53,7 +57,7 @@ const EditSize2d = (props: {
 		}
 		const g = gcd(width, height)
 		return `${width/g} : ${height/g}`
-	}, [keepAspectRatio])
+	}, [keepAspectRatio, aspectRatioToKeep])
 	return (<>
 		<div>
 			<label>

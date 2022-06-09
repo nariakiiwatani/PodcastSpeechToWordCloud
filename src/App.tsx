@@ -83,6 +83,8 @@ function App() {
 	}, [setImageSize])
 
 	const background = useBackground(captureElement?.current, 'rgba(0,0,0,0')
+	const [isUseBackgroundImage, setIsUseBackgroundImage] = useState(false)
+	const backgroundImageSize = useRef([0,0])
 	const handleBackgroundChange = useCallback(({color,image}:{color:{r:number,g:number,b:number,a:number},image:string}) => {
 		if(color) {
 			const {r,g,b,a} = color
@@ -90,11 +92,32 @@ function App() {
 		}
 		if(image) {
 			background.setImage(image)
+			{
+				var element = new Image() ;
+				element.onload = function () {
+					console.info(`image loaded ${element.width}x${element.height}`)
+					backgroundImageSize.current = [element.width, element.height]
+				}
+				element.src = image
+			}
+			setIsUseBackgroundImage(!!image)
 		}
-	}, [background.setColor, background.setImage])
+	}, [background.setColor, background.setImage, backgroundImageSize, backgroundImageSize?.current])
 
 	const [mask, setMask] = useState<HTMLCanvasElement>()
 	const [maskEnabled, setMaskEnabled] = useState(false)
+
+	const [triggerUpdateImageRatio, setTriggerUpdateImageRatio] = useState(false)
+	const handleSetImageSizeAspectRatio = useCallback((aspectRatio: number) => {
+		console.info('setImageSizeAspectRatio', aspectRatio)
+		setImageSize(([w,h]) => [Math.round(w), Math.round(w/aspectRatio)])
+		setTriggerUpdateImageRatio(true)
+	}, [setImageSize])
+	useEffect(() => {
+		if(triggerUpdateImageRatio) {
+			setTriggerUpdateImageRatio(false)
+		}
+	}, [triggerUpdateImageRatio])
 
 	return (
 		<div className={styles.app}>
@@ -105,7 +128,7 @@ function App() {
 					showSwitch={false}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<Speech2Text onSentence={addText} onError={console.error} />
 				</TreeNode>
 				<TreeNode
@@ -114,7 +137,7 @@ function App() {
 					showSwitch={false}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<textarea
 						className={styles.border}
 						value={text}
@@ -140,7 +163,7 @@ function App() {
 						onChangeEnabled={filters.class.setEnabled}
 						className={styles.editorItem}
 						titleClass={styles.heading3}
-					>				
+					>
 						<WordClassFilter
 							words={tokens}
 							onResult={filters.class.setResult}
@@ -155,7 +178,7 @@ function App() {
 					onChangeEnabled={filters.length.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<WordLengthRangeFilter
 						words={tokens}
 						onResult={filters.length.setResult}
@@ -169,7 +192,7 @@ function App() {
 					onChangeEnabled={filters.freq.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<WordFreqRangeFilter
 						words={tokens}
 						onResult={filters.freq.setResult}
@@ -183,7 +206,7 @@ function App() {
 					onChangeEnabled={filters.words.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<WordDenyFilter
 						words={tokens}
 						onResult={filters.words.setResult}
@@ -197,7 +220,7 @@ function App() {
 					showSwitch={false}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<select
 						className={styles.border}
 						value={font}
@@ -214,7 +237,7 @@ function App() {
 					showSwitch={false}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<div>
 						<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
 						<br />
@@ -249,10 +272,16 @@ function App() {
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 					onChangeEnabled={setMaskEnabled}
-				>				
+				>
 					<EditMask
 						onResult={setMask}
 					/>
+					{mask && maskEnabled &&
+						<button
+							onClick={e=> handleSetImageSizeAspectRatio(mask.width/mask.height)}
+							className={styles.roundButton}
+						>出力サイズに比率をコピー</button>
+					}
 				</TreeNode>
 				<TreeNode
 					title="背景を設定"
@@ -262,10 +291,16 @@ function App() {
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 					onChangeEnabled={background.setEnabled}
-				>				
+				>
 					<EditBackground
 						onChange={handleBackgroundChange}
 					/>
+					{isUseBackgroundImage &&
+						<button
+							onClick={e=> handleSetImageSizeAspectRatio(backgroundImageSize.current[0]/backgroundImageSize.current[1])}
+							className={styles.roundButton}
+						>出力サイズに比率をコピー</button>
+					}
 				</TreeNode>
 				<TreeNode
 					title={`画像サイズ(${imageSize[0]}x${imageSize[1]})`}
@@ -273,10 +308,11 @@ function App() {
 					showSwitch={false}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-				>				
+				>
 					<EditSize2d 
 						width={imageSize[0]}
 						height={imageSize[1]}
+						updateRatio={triggerUpdateImageRatio}
 						onChange={handleChangeImageSize}
 					/>
 				</TreeNode>
@@ -353,6 +389,12 @@ const styles = {
 	border : `
 	border-2
 	border-slate-600
+	`,
+	roundButton : `
+	border-2
+	border-slate-600
+	rounded-lg
+	p-1
 	`,
 	downloadButton : `
 	text-xl
