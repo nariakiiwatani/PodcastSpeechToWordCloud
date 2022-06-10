@@ -23,7 +23,7 @@ const DownloadElement = (prop:{
 			link.download = "wordcloud.png";
 			link.click();
 		})
-	}, [element?.current])
+	}, [element?.current, width, height])
 	return (<>
 		<div onClick={handleCapture}>
 			{children}

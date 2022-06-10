@@ -92,14 +92,11 @@ function App() {
 		}
 		if(image) {
 			background.setImage(image)
-			{
-				var element = new Image() ;
-				element.onload = function () {
-					console.info(`image loaded ${element.width}x${element.height}`)
-					setBackgroundImageSize([element.width, element.height])
-				}
-				element.src = image
+			var element = new Image()
+			element.onload = () => {
+				setBackgroundImageSize([element.width, element.height])
 			}
+			element.src = image
 			setIsUseBackgroundImage(!!image)
 		}
 	}, [background.setColor, background.setImage])
@@ -109,7 +106,6 @@ function App() {
 
 	const [triggerUpdateImageRatio, setTriggerUpdateImageRatio] = useState(false)
 	const handleSetImageSizeAspectRatio = useCallback((aspectRatio: number) => {
-		console.info('setImageSizeAspectRatio', aspectRatio)
 		setImageSize(([w,h]) => [Math.round(w), Math.round(w/aspectRatio)])
 		setTriggerUpdateImageRatio(true)
 	}, [setImageSize])
