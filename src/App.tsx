@@ -84,7 +84,7 @@ function App() {
 
 	const background = useBackground(captureElement?.current, 'rgba(0,0,0,0')
 	const [isUseBackgroundImage, setIsUseBackgroundImage] = useState(false)
-	const backgroundImageSize = useRef([0,0])
+	const [backgroundImageSize, setBackgroundImageSize] = useState([0,0])
 	const handleBackgroundChange = useCallback(({color,image}:{color:{r:number,g:number,b:number,a:number},image:string}) => {
 		if(color) {
 			const {r,g,b,a} = color
@@ -96,13 +96,13 @@ function App() {
 				var element = new Image() ;
 				element.onload = function () {
 					console.info(`image loaded ${element.width}x${element.height}`)
-					backgroundImageSize.current = [element.width, element.height]
+					setBackgroundImageSize([element.width, element.height])
 				}
 				element.src = image
 			}
 			setIsUseBackgroundImage(!!image)
 		}
-	}, [background.setColor, background.setImage, backgroundImageSize, backgroundImageSize?.current])
+	}, [background.setColor, background.setImage])
 
 	const [mask, setMask] = useState<HTMLCanvasElement>()
 	const [maskEnabled, setMaskEnabled] = useState(false)
@@ -297,7 +297,7 @@ function App() {
 					/>
 					{isUseBackgroundImage &&
 						<button
-							onClick={e=> handleSetImageSizeAspectRatio(backgroundImageSize.current[0]/backgroundImageSize.current[1])}
+							onClick={e=> handleSetImageSizeAspectRatio(backgroundImageSize[0]/backgroundImageSize[1])}
 							className={styles.roundButton}
 						>出力サイズに比率をコピー</button>
 					}
