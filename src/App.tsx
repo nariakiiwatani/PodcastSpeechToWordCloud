@@ -69,8 +69,8 @@ function App() {
 	const [font, setFont] = useState('sans-serif')
 	const fontList = useFontList(font)
 
-	const [sizeOffset, setSizeOffset] = useState(0)
-	const [sizeMult, setSizeMult] = useState(1)
+	const [sizeOffset, setSizeOffset] = useState(10)
+	const [sizeMult, setSizeMult] = useState(2)
 	const sizeMapFunction = useCallback((value: number) => {
 		return value * sizeMult + sizeOffset
 	}, [sizeOffset, sizeMult])
