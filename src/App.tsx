@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Tokenizer } from './components/Tokenizer';
 import MyWordCloud from './components/MyWordcloud';
+import { RotationSettings } from './libs/WordCloud'
 import Speech2Text from './components/Speech2Text';
 import { Word } from './libs/Words';
 import { WordClassFilter } from './components/WordClassFilter'
@@ -13,6 +14,7 @@ import EditSize2d from './components/EditSize';
 import EditMask from './components/EditMask';
 import TreeNode from './components/TreeNode';
 import useBackground from './libs/useBackground';
+import EditRotation from './components/Rotation'
 
 const useFilterResults = (
 	defaultEnabled: boolean
@@ -72,6 +74,12 @@ function App() {
 	const sizeMapFunction = useCallback((value: number) => {
 		return value * sizeMult + sizeOffset
 	}, [sizeOffset, sizeMult])
+
+	const [rotation, setRotation] = useState<RotationSettings>({
+		ratio:0.5,
+		range:[0, Math.PI/2],
+		steps:2
+	})
 
 	const captureElement = useRef<HTMLDivElement>(null)
 
@@ -261,6 +269,18 @@ function App() {
 					</div>
 				</TreeNode>
 				<TreeNode
+					title="回転"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>
+					<EditRotation
+						defaultValue={rotation}
+						onChange={setRotation}
+					/>
+				</TreeNode>
+				<TreeNode
 					title="マスク画像を設定"
 					defaultOpen={true}
 					showSwitch={true}
@@ -341,6 +361,7 @@ function App() {
 					font={font}
 					minFontSize={sizeOffset}
 					valueMap={sizeMapFunction}
+					rotation={rotation}
 				/>
 			</div>
 		</div>

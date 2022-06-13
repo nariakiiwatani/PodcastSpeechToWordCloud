@@ -3,6 +3,12 @@ import WordCloud from 'wordcloud'
 
 type ListEntry = [string, number];
 
+export interface RotationSettings {
+	ratio: number,
+	range: [number, number],
+	steps: number
+}
+
 export const useWordCloud = (props:{
 	element: HTMLElement,
 	mask: HTMLCanvasElement,
@@ -13,8 +19,9 @@ export const useWordCloud = (props:{
 	font: string,
 	minFontSize:number,
 	weightFactor: (value: number) => number,
+	rotation: RotationSettings
 }) => {
-	const { element, mask, bgColor={r:0,g:0,b:0,a:0}, data, width, height, font, minFontSize, weightFactor } = props;
+	const { element, mask, bgColor={r:0,g:0,b:0,a:0}, data, width, height, font, minFontSize, weightFactor, rotation } = props;
 	useEffect(() => {
 		if(!element) {
 			return
@@ -41,8 +48,12 @@ export const useWordCloud = (props:{
 			drawMask: false,
 			maskColor: '#fff',
 			clearCanvas: !maskCopy,
-			shape:'square'
+			shape:'square',
+			rotateRatio:rotation.ratio,
+			minRotation:rotation.range[0],
+			maxRotation:rotation.range[1],
+			rotationSteps:rotation.steps
 		});
-	}, [element, mask, data, width, height, font, minFontSize, weightFactor]);
+	}, [element, mask, data, width, height, font, minFontSize, weightFactor, rotation]);
 	return [WordCloud.isSupported];
 }

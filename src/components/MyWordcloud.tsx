@@ -1,6 +1,8 @@
 import { useMemo, useRef } from 'react';
 import { useWordCloud } from '../libs/WordCloud';
 
+import { RotationSettings } from '../libs/WordCloud';
+
 const MyWordcloud = (prop:{
 	autoUpdate: boolean,
 	resultRef?: React.MutableRefObject<HTMLDivElement>,
@@ -10,10 +12,11 @@ const MyWordcloud = (prop:{
 	words:string[],
 	font?:string,
 	minFontSize:number,
-	valueMap?: (value:number)=>number
+	valueMap?: (value:number)=>number,
+	rotation: RotationSettings
 }) => {
 	type Datum = [string, number]
-	const { width, height, autoUpdate, resultRef, words, font, minFontSize, valueMap=v=>v, mask } = prop
+	const { width, height, autoUpdate, resultRef, words, font, minFontSize, valueMap=v=>v, mask, rotation } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	resultRef.current = innerRef.current
 	const cloudRef = useRef<HTMLDivElement>()
@@ -43,6 +46,7 @@ const MyWordcloud = (prop:{
 		height,
 		font: font || 'sanf-serif',
 		minFontSize,
+		rotation,
 		weightFactor:valueMap,
 	})
 	return (<>
