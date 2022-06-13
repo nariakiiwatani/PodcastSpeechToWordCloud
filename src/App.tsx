@@ -355,6 +355,11 @@ const styles = {
 	flex-row
 	gap-4
 	border-2
+	w-full
+	min-w-0
+	h-full
+	min-h-0
+	absolute
 	`,
 	editorCol : `
 	flex
@@ -364,6 +369,8 @@ const styles = {
 	p-2
 	m-1
 	border-2
+	overflow-y-scroll
+	h-full
 	`,
 	editorItem : `
 	flex-none
