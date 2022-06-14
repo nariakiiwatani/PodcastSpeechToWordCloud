@@ -13,7 +13,8 @@ module.exports = {
 		}),
 		new CopyWebpackPlugin({
 			patterns: [
-	            { from: 'public', to: './' }
+	            { from: 'public', to: './' },
+	            { from: 'LICENSE.txt', to: './' }
     	    ]
 		}),
 		new webpack.ProvidePlugin({

@@ -17,6 +17,7 @@ import useBackground from './libs/useBackground';
 import EditRotation from './components/Rotation'
 import ColorSwatch from './components/ColorSwatch';
 import { RGBA } from './libs/useColor';
+import Header from './components/Header';
 
 const useFilterResults = (
 	defaultEnabled: boolean
@@ -126,6 +127,10 @@ function App() {
 	}, [triggerUpdateImageRatio])
 
 	return (
+	<div className={styles.main}>
+		<div className={styles.header}>
+			<Header />
+		</div>
 		<div className={styles.app}>
 			<div className={styles.editorCol}>
 				<TreeNode
@@ -378,12 +383,20 @@ function App() {
 				/>
 			</TreeNode>
 		</div>
-	);
+	</div>);
 }
 
 export default App;
 
 const styles = {
+	main: `
+	w-full h-full
+	flex flex-col
+	absolute
+	`,
+	header: `
+	basis-8
+	`,
 	app : `
 	flex
 	flex-row
@@ -393,7 +406,6 @@ const styles = {
 	min-w-0
 	h-full
 	min-h-0
-	absolute
 	`,
 	editorCol : `
 	flex
