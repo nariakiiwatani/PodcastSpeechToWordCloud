@@ -81,6 +81,7 @@ const styles = {
 	fixed inset-0 z-50 bg-gray-800/70
 	h-full w-full
 	overflow-y-scroll
+	backdrop-blur
 	`,
 	license: `
 	leading-tight
