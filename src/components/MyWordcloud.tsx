@@ -6,6 +6,7 @@ import { RotationSettings } from '../libs/WordCloud';
 
 type Props = {
 	resultRef?: React.MutableRefObject<HTMLDivElement>,
+	bgRef?: React.MutableRefObject<HTMLDivElement>,
 	mask?: HTMLCanvasElement,
 	width:number,
 	height:number,
@@ -21,6 +22,7 @@ const MyWordcloud = ({
 	width,
 	height,
 	resultRef,
+	bgRef,
 	words,
 	font,
 	colors='random-dark',
@@ -30,8 +32,6 @@ const MyWordcloud = ({
 	rotation
 }:Props) => {
 	type Datum = [string, number]
-	const innerRef = useRef<HTMLDivElement>()
-	resultRef.current = innerRef.current
 	const cloudRef = useRef<HTMLDivElement>()
 	const [autoUpdate, setAutoUpdate] = useState(true)
 
@@ -73,14 +73,24 @@ const MyWordcloud = ({
 		/>
 		<label htmlFor='autoUpdate'>自動更新</label>
 		<div
-			ref={innerRef}
+			ref={resultRef}
 			style={{
+				position: 'relative',
 				minWidth: '100%',
 				maxWidth: 'max-content',
 				width: `${width}px`,
 				aspectRatio: `${width}/${height}`,
+				overflow: 'hidden'
 			}}
 		>
+		<div
+			ref={bgRef}
+			style={{
+				position: 'absolute',
+				width: '100%',
+				height: '100%'
+			}}
+		 />
 			{isWordCloudSupported && <div
 				ref={cloudRef}
 				className={styles.drawTarget}

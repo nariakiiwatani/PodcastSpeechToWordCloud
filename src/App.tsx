@@ -87,15 +87,17 @@ function App() {
 	})
 
 	const captureElement = useRef<HTMLDivElement>(null)
+	const bgElement = useRef<HTMLDivElement>(null)
 
 	const [imageSize, setImageSize] = useState([512,512])
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
 	}, [setImageSize])
 
-	const background = useBackground(captureElement?.current, 'rgba(0,0,0,0')
+	const background = useBackground(bgElement?.current, 'rgba(0,0,0,0')
 	const [isUseBackgroundImage, setIsUseBackgroundImage] = useState(false)
 	const [backgroundImageSize, setBackgroundImageSize] = useState([0,0])
+	const [backgroundBlur, setBackgroundBlur] = useState(0)
 	const handleBackgroundChange = useCallback(({color,image}:{color:{r:number,g:number,b:number,a:number},image:string}) => {
 		if(color) {
 			const {r,g,b,a} = color
@@ -111,6 +113,12 @@ function App() {
 			setIsUseBackgroundImage(!!image)
 		}
 	}, [background.setColor, background.setImage])
+	useEffect(() => {
+		const style = bgElement?.current?.style
+		if(!style) return
+		style.filter = `blur(${backgroundBlur}px)`
+		style.left = style.top = style.right = style.bottom = `0px`
+	}, [backgroundBlur])
 
 	const [mask, setMask] = useState<HTMLCanvasElement>()
 	const [maskEnabled, setMaskEnabled] = useState(false)
@@ -330,11 +338,22 @@ function App() {
 					<EditBackground
 						onChange={handleBackgroundChange}
 					/>
-					{isUseBackgroundImage &&
+					{isUseBackgroundImage && <>
+						<label htmlFor='blurPixels'>{`ぼかし(${backgroundBlur})`}</label>
+						<input type='range'
+							id='blurPixels'
+							min='0'
+							max='32'
+							step='1'
+							value={backgroundBlur}
+							onChange={(e) => setBackgroundBlur(parseInt(e.target.value))}
+							name='backgroundBlur'
+						/>
 						<button
 							onClick={e=> handleSetImageSizeAspectRatio(backgroundImageSize[0]/backgroundImageSize[1])}
 							className={styles.roundButton}
 						>出力サイズに比率をコピー</button>
+						</>
 					}
 				</TreeNode>
 				<TreeNode
@@ -371,6 +390,7 @@ function App() {
 			>
 				<MyWordCloud
 					resultRef={captureElement}
+					bgRef={bgElement}
 					mask={maskEnabled ? mask:undefined}
 					width={imageSize[0]}
 					height={imageSize[1]}
