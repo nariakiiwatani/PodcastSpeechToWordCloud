@@ -727,8 +727,14 @@ Ensure the default browser behavior of the `hidden` attribute.
 .m-1 {
   margin: 0.25rem;
 }
+.inline-block {
+  display: inline-block;
+}
 .flex {
   display: flex;
+}
+.contents {
+  display: contents;
 }
 .hidden {
   display: none;
@@ -813,6 +819,10 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-size: 1.25rem;
   line-height: 1.75rem;
 }
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
 .font-semibold {
   font-weight: 600;
 }
@@ -829,4 +839,10 @@ Ensure the default browser behavior of the `hidden` attribute.
 }
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+.last\:border-b-0:last-child {
+  border-bottom-width: 0px;
+}
+.last\:pb-2:last-child {
+  padding-bottom: 0.5rem;
 }
