@@ -20,7 +20,7 @@ export const WordDenyFilter = (prop:{
 			<textarea
 				value={denyText}
 				onChange={e => setDenyText(e.target.value)}
-				placeholder="除外語を入力してください"
+				placeholder="結果から除外する語を入力してください"
 			/>
 		</div>
 	</>)

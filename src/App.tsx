@@ -168,7 +168,7 @@ function App() {
 						defaultEnable={true}
 						onChangeEnabled={filters.class.setEnabled}
 						className={styles.editorItem}
-						titleClass={styles.heading3}
+						titleClass={styles.heading4}
 					>
 						<WordClassFilter
 							words={tokens}
@@ -236,66 +236,66 @@ function App() {
 							<option key={font} value={font}>{font}</option>
 						))}
 					</select>
-				</TreeNode>
-				<TreeNode
-					title="文字サイズ"
-					defaultOpen={true}
-					showSwitch={false}
-					className={styles.editorItem}
-					titleClass={styles.heading3}
-				>
-					<div>
-						<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
-						<br />
-						<input
-							type='range'
-							min='0'
-							max='100'
-							value={sizeOffset}
-							onChange={(e) => setSizeOffset(parseInt(e.target.value))}
-							name='sizeOffset'
+					<TreeNode
+						title="サイズ"
+						defaultOpen={true}
+						showSwitch={false}
+						className={styles.editorItem}
+						titleClass={styles.heading4}
+					>
+						<div>
+							<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
+							<br />
+							<input
+								type='range'
+								min='0'
+								max='100'
+								value={sizeOffset}
+								onChange={(e) => setSizeOffset(parseInt(e.target.value))}
+								name='sizeOffset'
+							/>
+						</div>
+						<div>
+							<label htmlFor='sizeMult'>{`倍率(${sizeMult})`}</label>
+							<br />
+							<input
+								type='range'
+								min='1'
+								max='10'
+								step='0.01'
+								value={sizeMult}
+								onChange={(e) => setSizeMult(Number(e.target.value))}
+								name='sizeMult'
+							/>
+						</div>
+					</TreeNode>
+					<TreeNode
+						title="色"
+						defaultOpen={true}
+						showSwitch={false}
+						className={styles.editorItem}
+						titleClass={styles.heading4}
+					>
+						<ColorSwatch
+							colors={colors}
+							onChange={setColors}
 						/>
-					</div>
-					<div>
-						<label htmlFor='sizeMult'>{`倍率(${sizeMult})`}</label>
-						<br />
-						<input
-							type='range'
-							min='1'
-							max='10'
-							step='0.01'
-							value={sizeMult}
-							onChange={(e) => setSizeMult(Number(e.target.value))}
-							name='sizeMult'
+					</TreeNode>
+					<TreeNode
+						title="回転"
+						defaultOpen={true}
+						showSwitch={false}
+						className={styles.editorItem}
+						titleClass={styles.heading4}
+					>
+						<EditRotation
+							defaultValue={rotation}
+							onChange={setRotation}
 						/>
-					</div>
+					</TreeNode>
 				</TreeNode>
 				<TreeNode
-					title="回転"
-					defaultOpen={true}
-					showSwitch={false}
-					className={styles.editorItem}
-					titleClass={styles.heading3}
-				>
-					<EditRotation
-						defaultValue={rotation}
-						onChange={setRotation}
-					/>
-				</TreeNode>
-				<TreeNode
-					title="色"
-					defaultOpen={true}
-					showSwitch={false}
-					className={styles.editorItem}
-					titleClass={styles.heading3}
-				>
-					<ColorSwatch
-						colors={colors}
-						onChange={setColors}
-					/>
-				</TreeNode>
-				<TreeNode
-					title="マスク画像を設定"
+					title="配置マスク"
 					defaultOpen={true}
 					showSwitch={true}
 					defaultEnable={maskEnabled}
@@ -314,7 +314,7 @@ function App() {
 					}
 				</TreeNode>
 				<TreeNode
-					title="背景を設定"
+					title="背景"
 					defaultOpen={true}
 					showSwitch={true}
 					defaultEnable={background.enabled}
@@ -411,6 +411,8 @@ const styles = {
 	p-2
 	pb-8
 	border-b-2
+	last:border-b-0
+	last:pb-2
 	`,
 	preview : `
 	flex-1
@@ -420,6 +422,11 @@ const styles = {
 	`,
 	heading3 : `
 	text-xl
+	text-slate-600
+	font-semibold
+	`,
+	heading4 : `
+	text-lg
 	text-slate-600
 	font-semibold
 	`,
