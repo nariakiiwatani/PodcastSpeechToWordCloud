@@ -21,21 +21,25 @@ type Props = {
 	colors?: RGBA[]
 	onChange: (colors: RGBA[]) => void
 }
+const defaultTheme = 'spring'
+const makeColors = (name: string, resolution:number=8): RGBA[] => {
+	if(!(name in ColorScheme)) {
+		return []
+	}
+	const scheme = ColorScheme[name]
+	return scheme.interpolate
+	? [...Array(resolution)].map((_,i)=>calcColor(i/(resolution-1), name)).map(c=>toRGB(c,1))
+	: scheme.colors.map(c=>toRGB(c,255))
+}
+
 const ColorSwatch = ({
-	colors = (Object.values(ColorScheme)[0] as ColorMap).colors.map(c=>toRGB(c,255)),
+	colors = (makeColors(defaultTheme)),
 	onChange
 }:Props) => {
-	const [name, setName] = useState(() => Object.keys(ColorScheme)[0])
+	const [name, setName] = useState(defaultTheme)
 	const handleChangeName = useCallback((name) => {
-		if(name in ColorScheme) {
-			setName(name)
-			const scheme = ColorScheme[name] as ColorMap
-			onChange(
-				(scheme.interpolate
-					? [...Array(8)].map((_,i)=>calcColor(i/7, name)).map(c=>toRGB(c,1))
-					: scheme.colors.map(c=>toRGB(c,255)))
-				)
-		}
+		setName(name)
+		onChange(makeColors(name))
 	}, [ColorScheme, calcColor])
 	const [pickerIndex, setPickerIndex] = useState(0)
 	const [isPickerOpen, setIsPickerOpen] = useState(false)
