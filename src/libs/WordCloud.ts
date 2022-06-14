@@ -9,7 +9,7 @@ export interface RotationSettings {
 	steps: number
 }
 
-export const useWordCloud = (props:{
+type Props = {
 	element: HTMLElement,
 	mask: HTMLCanvasElement,
 	bgColor?: {r:number,g:number,b:number,a:number},
@@ -20,8 +20,20 @@ export const useWordCloud = (props:{
 	minFontSize:number,
 	weightFactor: (value: number) => number,
 	rotation: RotationSettings
-}) => {
-	const { element, mask, bgColor={r:0,g:0,b:0,a:0}, data, width, height, font, minFontSize, weightFactor, rotation } = props;
+}
+
+export const useWordCloud = ({
+	element,
+	mask,
+	bgColor={r:0,g:0,b:0,a:0},
+	data,
+	width,
+	height,
+	font,
+	minFontSize,
+	weightFactor,
+	rotation
+}:Props) => {
 	useEffect(() => {
 		if(!element) {
 			return
