@@ -67,8 +67,13 @@ const ColorSwatch = ({
 					margin: '0 5px'
 				}}
 					onClick={e=> {
-						setPickerIndex(i)
-						setIsPickerOpen(true)
+						if(pickerIndex === i && isPickerOpen) {
+							setIsPickerOpen(false)
+						}
+						else {
+							setPickerIndex(i)
+							setIsPickerOpen(true)
+						}
 					}}
 				/>
 			))}
