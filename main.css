@@ -715,17 +715,43 @@ Ensure the default browser behavior of the `hidden` attribute.
 .pointer-events-none {
   pointer-events: none;
 }
+.fixed {
+  position: fixed;
+}
 .absolute {
   position: absolute;
 }
 .relative {
   position: relative;
 }
+.inset-0 {
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  left: 0px;
+}
+.z-50 {
+  z-index: 50;
+}
 .float-right {
   float: right;
 }
 .m-1 {
   margin: 0.25rem;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.mr-2 {
+  margin-right: 0.5rem;
+}
+.mt-16 {
+  margin-top: 4rem;
 }
 .inline-block {
   display: inline-block;
@@ -742,14 +768,26 @@ Ensure the default browser behavior of the `hidden` attribute.
 .h-full {
   height: 100%;
 }
+.h-7 {
+  height: 1.75rem;
+}
 .min-h-0 {
   min-height: 0px;
 }
 .w-full {
   width: 100%;
 }
+.w-7 {
+  width: 1.75rem;
+}
+.w-1\/2 {
+  width: 50%;
+}
 .min-w-0 {
   min-width: 0px;
+}
+.min-w-\[640px\] {
+  min-width: 640px;
 }
 .flex-none {
   flex: none;
@@ -757,8 +795,14 @@ Ensure the default browser behavior of the `hidden` attribute.
 .flex-1 {
   flex: 1 1 0%;
 }
+.basis-8 {
+  flex-basis: 2rem;
+}
 .basis-1\/6 {
   flex-basis: 16.666667%;
+}
+.basis-1\/4 {
+  flex-basis: 25%;
 }
 .cursor-pointer {
   cursor: pointer;
@@ -806,11 +850,17 @@ Ensure the default browser behavior of the `hidden` attribute.
   --tw-border-opacity: 1;
   border-color: rgb(71 85 105 / var(--tw-border-opacity));
 }
+.bg-gray-800\/70 {
+  background-color: rgb(31 41 55 / 0.7);
+}
 .p-2 {
   padding: 0.5rem;
 }
 .p-1 {
   padding: 0.25rem;
+}
+.p-8 {
+  padding: 2rem;
 }
 .pb-8 {
   padding-bottom: 2rem;
@@ -823,12 +873,27 @@ Ensure the default browser behavior of the `hidden` attribute.
   font-size: 1.125rem;
   line-height: 1.75rem;
 }
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
 .font-semibold {
   font-weight: 600;
+}
+.leading-tight {
+  line-height: 1.25;
 }
 .text-slate-600 {
   --tw-text-opacity: 1;
   color: rgb(71 85 105 / var(--tw-text-opacity));
+}
+.text-slate-200 {
+  --tw-text-opacity: 1;
+  color: rgb(226 232 240 / var(--tw-text-opacity));
 }
 .opacity-50 {
   opacity: 0.5;
@@ -839,6 +904,9 @@ Ensure the default browser behavior of the `hidden` attribute.
 }
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
+}
+.last\:mr-0:last-child {
+  margin-right: 0px;
 }
 .last\:border-b-0:last-child {
   border-bottom-width: 0px;
