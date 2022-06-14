@@ -1,3 +1,4 @@
+import { RGBA } from '../libs/useColor';
 import { useMemo, useRef, useState } from 'react';
 import { useWordCloud } from '../libs/WordCloud';
 
@@ -11,6 +12,7 @@ type Props = {
 	words:string[],
 	font?:string,
 	minFontSize:number,
+	colors?:RGBA[]|string
 	valueMap?: (value:number)=>number,
 	rotation: RotationSettings
 }
@@ -21,6 +23,7 @@ const MyWordcloud = ({
 	resultRef,
 	words,
 	font,
+	colors='random-dark',
 	minFontSize,
 	valueMap=v=>v,
 	mask,
@@ -56,6 +59,7 @@ const MyWordcloud = ({
 		width,
 		height,
 		font: font || 'sanf-serif',
+		colors,
 		minFontSize,
 		rotation,
 		weightFactor:valueMap,

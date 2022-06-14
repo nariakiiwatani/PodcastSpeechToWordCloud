@@ -15,6 +15,8 @@ import EditMask from './components/EditMask';
 import TreeNode from './components/TreeNode';
 import useBackground from './libs/useBackground';
 import EditRotation from './components/Rotation'
+import ColorSwatch from './components/ColorSwatch';
+import { RGBA } from './libs/useColor';
 
 const useFilterResults = (
 	defaultEnabled: boolean
@@ -74,6 +76,8 @@ function App() {
 	const sizeMapFunction = useCallback((value: number) => {
 		return value * sizeMult + sizeOffset
 	}, [sizeOffset, sizeMult])
+
+	const [colors, setColors] = useState<RGBA[]>()
 
 	const [rotation, setRotation] = useState<RotationSettings>({
 		ratio:0.5,
@@ -279,6 +283,18 @@ function App() {
 					/>
 				</TreeNode>
 				<TreeNode
+					title="色"
+					defaultOpen={true}
+					showSwitch={false}
+					className={styles.editorItem}
+					titleClass={styles.heading3}
+				>
+					<ColorSwatch
+						colors={colors}
+						onChange={setColors}
+					/>
+				</TreeNode>
+				<TreeNode
 					title="マスク画像を設定"
 					defaultOpen={true}
 					showSwitch={true}
@@ -355,6 +371,7 @@ function App() {
 					height={imageSize[1]}
 					words={words}
 					font={font}
+					colors={colors}
 					minFontSize={sizeOffset}
 					valueMap={sizeMapFunction}
 					rotation={rotation}

@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import WordCloud from 'wordcloud'
+import { RGBA } from '../libs/useColor'
 
 type ListEntry = [string, number];
 
@@ -11,15 +12,16 @@ export interface RotationSettings {
 
 type Props = {
 	element: HTMLElement,
-	mask: HTMLCanvasElement,
+	mask?: HTMLCanvasElement,
 	bgColor?: {r:number,g:number,b:number,a:number},
 	data: ListEntry[],
 	width: number,
 	height: number,
-	font: string,
-	minFontSize:number,
-	weightFactor: (value: number) => number,
-	rotation: RotationSettings
+	font?: string,
+	minFontSize?:number,
+	weightFactor?: (value: number) => number,
+	rotation?: RotationSettings,
+	colors?: RGBA[] | string
 }
 
 export const useWordCloud = ({
@@ -32,8 +34,18 @@ export const useWordCloud = ({
 	font,
 	minFontSize,
 	weightFactor,
-	rotation
+	rotation,
+	colors
 }:Props) => {
+	const colorFunc = useMemo(() => {
+		if(colors === undefined) return undefined
+		if(typeof colors === 'string') return colors
+		if(colors.length === 0) return 'random-dark'
+		return (word: string, weight: string | number, fontSize: number, distance: number, theta: number) => {
+			const color = colors[Math.floor(distance*theta*fontSize)%colors.length]
+			return `rgba(${color.r},${color.g},${color.b},${color.a})`
+		}
+	}, [colors])
 	useEffect(() => {
 		if(!element) {
 			return
@@ -53,7 +65,7 @@ export const useWordCloud = ({
 			fontFamily: font,
 			fontWeight: 'normal',
 			minSize: minFontSize,
-			color: 'random-dark',
+			color: colorFunc,
 			backgroundColor: `rgba(${bgColor.r},${bgColor.g},${bgColor.b},${bgColor.a})`,
 			origin: [element.clientWidth / 2, element.clientHeight / 2],
 			drawOutOfBound: false,
@@ -66,6 +78,6 @@ export const useWordCloud = ({
 			maxRotation:rotation.range[1],
 			rotationSteps:rotation.steps
 		});
-	}, [element, mask, data, width, height, font, minFontSize, weightFactor, rotation]);
+	}, [element, mask, data, width, height, font, minFontSize, weightFactor, rotation, colors]);
 	return [WordCloud.isSupported];
 }

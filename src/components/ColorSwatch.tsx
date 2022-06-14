@@ -1,0 +1,81 @@
+import { useEffect, useState, useCallback } from 'react'
+import ColorScheme, { calcColor } from '../libs/js-colormaps'
+import { ChromePicker as ColorPicker } from 'react-color'
+import { RGBA } from '../libs/useColor'
+
+type ColorMap = {
+	interpolate: boolean,
+	colors: [[number, number, number]]
+}
+type ColorSchemeType = {
+	[key: string]: ColorMap
+}
+
+function toCSSColor(color: RGBA, mul:number): string {
+	return `rgba(${color.r*mul}, ${color.g*mul}, ${color.b*mul}, ${color.a})`
+}
+function toRGB(color: [number, number, number], mul:number): RGBA {
+	return { r: color[0]*mul, g: color[1]*mul, b: color[2]*mul, a:1 }
+}
+type Props = {
+	colors?: RGBA[]
+	onChange: (colors: RGBA[]) => void
+}
+const ColorSwatch = ({
+	colors = (Object.values(ColorScheme)[0] as ColorMap).colors.map(c=>toRGB(c,255)),
+	onChange
+}:Props) => {
+	const [name, setName] = useState(() => Object.keys(ColorScheme)[0])
+	const handleChangeName = useCallback((name) => {
+		if(name in ColorScheme) {
+			setName(name)
+			const scheme = ColorScheme[name] as ColorMap
+			onChange(
+				(scheme.interpolate
+					? [...Array(8)].map((_,i)=>calcColor(i/7, name)).map(c=>toRGB(c,1))
+					: scheme.colors.map(c=>toRGB(c,255)))
+				)
+		}
+	}, [ColorScheme, calcColor])
+	const [pickerIndex, setPickerIndex] = useState(0)
+	const [isPickerOpen, setIsPickerOpen] = useState(false)
+
+	const handleChangeColor = useCallback((color) => {
+		const newColors = [...colors]
+		newColors[pickerIndex] = color.rgb
+		onChange(newColors)
+	}, [colors, pickerIndex,])
+
+	return (<div>
+		<label htmlFor='color_schemes'>プリセットから選ぶ</label>
+		<select id='color_schemes' onChange={e=>handleChangeName(e.target.value)} value={name} >
+			{Object.entries(ColorScheme as ColorSchemeType).map(([name, {interpolate, colors}],i) => (
+				<option value={name} key={name}>{name}</option>
+			))}
+		</select>
+		<div>
+			{colors.map((color, i) => (
+				<div key={i} style={{
+					backgroundColor: toCSSColor(color, 1),
+					width: '20px',
+					height: '20px',
+					display: 'inline-block',
+					margin: '0 5px'
+				}}
+					onClick={e=> {
+						setPickerIndex(i)
+						setIsPickerOpen(true)
+					}}
+				/>
+			))}
+		</div>
+		{isPickerOpen && colors.length > pickerIndex && (
+			<ColorPicker
+				color={colors[pickerIndex]}
+				onChange={handleChangeColor}
+			/>
+		)}
+	</div>)
+}
+
+export default ColorSwatch
