@@ -83,8 +83,6 @@ function App() {
 
 	const captureElement = useRef<HTMLDivElement>(null)
 
-	const [autoUpdate, setAutoUpdate] = useState(true)
-
 	const [imageSize, setImageSize] = useState([512,512])
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
@@ -342,17 +340,15 @@ function App() {
 					</DownloadElement>
 				</div>
 			</div>
-			<div className={styles.preview}>
-				<p className={styles.heading3}>プレビュー</p>
-				<input
-					type='checkbox'
-					checked={autoUpdate}
-					onChange={(e) => setAutoUpdate(e.target.checked)}
-					name='autoUpdate'
-				/>
-				<label htmlFor='autoUpdate'>自動更新</label>
+			<TreeNode
+				title='プレビュー'
+				canToggleOpen={false}
+				defaultOpen={true}
+				showSwitch={false}
+				className={styles.preview}
+				titleClass={styles.heading3}
+			>
 				<MyWordCloud
-					autoUpdate={autoUpdate}	
 					resultRef={captureElement}
 					mask={maskEnabled ? mask:undefined}
 					width={imageSize[0]}
@@ -363,7 +359,7 @@ function App() {
 					valueMap={sizeMapFunction}
 					rotation={rotation}
 				/>
-			</div>
+			</TreeNode>
 		</div>
 	);
 }

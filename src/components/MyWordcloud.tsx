@@ -1,10 +1,9 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useWordCloud } from '../libs/WordCloud';
 
 import { RotationSettings } from '../libs/WordCloud';
 
-const MyWordcloud = (prop:{
-	autoUpdate: boolean,
+type Props = {
 	resultRef?: React.MutableRefObject<HTMLDivElement>,
 	mask?: HTMLCanvasElement,
 	width:number,
@@ -14,12 +13,24 @@ const MyWordcloud = (prop:{
 	minFontSize:number,
 	valueMap?: (value:number)=>number,
 	rotation: RotationSettings
-}) => {
+}
+
+const MyWordcloud = ({
+	width,
+	height,
+	resultRef,
+	words,
+	font,
+	minFontSize,
+	valueMap=v=>v,
+	mask,
+	rotation
+}:Props) => {
 	type Datum = [string, number]
-	const { width, height, autoUpdate, resultRef, words, font, minFontSize, valueMap=v=>v, mask, rotation } = prop
 	const innerRef = useRef<HTMLDivElement>()
 	resultRef.current = innerRef.current
 	const cloudRef = useRef<HTMLDivElement>()
+	const [autoUpdate, setAutoUpdate] = useState(true)
 
 	const dataRef = useRef<Datum[]>()
 	const data:Datum[] = useMemo(() => {
@@ -50,6 +61,13 @@ const MyWordcloud = (prop:{
 		weightFactor:valueMap,
 	})
 	return (<>
+		<input
+			type='checkbox'
+			checked={autoUpdate}
+			onChange={(e) => setAutoUpdate(e.target.checked)}
+			id='autoUpdate'
+		/>
+		<label htmlFor='autoUpdate'>自動更新</label>
 		<div
 			ref={innerRef}
 			style={{

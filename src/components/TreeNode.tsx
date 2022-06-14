@@ -1,8 +1,9 @@
 import { useState, useCallback } from 'react'
 import Switch from "react-switch";
 
-type Prop = {
+type Props = {
 	title: string,
+	canToggleOpen?: boolean,
 	defaultOpen: boolean,
 	showSwitch: boolean,
 	defaultEnable?: boolean,
@@ -12,8 +13,17 @@ type Prop = {
 	onChangeEnabled?: (enabled: boolean) => void,
 }
 
-const TreeNode = (prop:Prop) => {
-	const { title, defaultOpen, showSwitch, defaultEnable=true, children, className, titleClass, onChangeEnabled } = prop
+const TreeNode = ({
+	title,
+	canToggleOpen=true,
+	defaultOpen,
+	showSwitch,
+	defaultEnable=true,
+	children,
+	className,
+	titleClass,
+	onChangeEnabled
+}:Props) => {
 	const [open, setOpen] = useState(defaultOpen)
 	const [enable, setEnable] = useState<boolean>(defaultEnable)
 	const toggle = useCallback(() => {
@@ -27,12 +37,14 @@ const TreeNode = (prop:Prop) => {
 	return (<>
 		<div className={className}>
 			<div>
+				{canToggleOpen ? (
 				<span
 					className={titleClass}
 					onClick={toggle}
 				>
 					{open ? '▼' : '▶︎' } {title}
-				</span>
+				</span>) : (
+				<span className={titleClass}>{title}</span>)}
 				<div className={styles.right}>
 					{showSwitch && <Switch
 						onChange={handleEnable}
