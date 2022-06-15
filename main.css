@@ -747,6 +747,9 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-left: auto;
   margin-right: auto;
 }
+.mt-2 {
+  margin-top: 0.5rem;
+}
 .mr-2 {
   margin-right: 0.5rem;
 }
