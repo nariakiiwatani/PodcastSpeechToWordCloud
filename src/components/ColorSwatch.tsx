@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import ColorScheme, { calcColor } from '../libs/js-colormaps'
 import { ChromePicker as ColorPicker } from 'react-color'
 import { RGBA } from '../libs/useColor'
+import FilterList from './FilterList';
 
 type ColorMap = {
 	interpolate: boolean,
@@ -49,15 +50,16 @@ const ColorSwatch = ({
 		newColors[pickerIndex] = color.rgb
 		onChange(newColors)
 	}, [colors, pickerIndex,])
+	const options = useMemo(() => Object.keys(ColorScheme as ColorSchemeType), [ColorScheme])
 
 	return (<div>
-		<label htmlFor='color_schemes'>プリセットから選ぶ</label>
-		<select id='color_schemes' onChange={e=>handleChangeName(e.target.value)} value={name} >
-			{Object.entries(ColorScheme as ColorSchemeType).map(([name, {interpolate, colors}],i) => (
-				<option value={name} key={name}>{name}</option>
-			))}
-		</select>
-		<div>
+		<label>プリセットから選ぶ</label>
+		<FilterList
+			onChange={handleChangeName}
+			items={options}
+			selection={name}
+		/>
+		<div className={`mt-2`}>
 			{colors.map((color, i) => (
 				<div key={i} style={{
 					backgroundColor: toCSSColor(color, 1),
