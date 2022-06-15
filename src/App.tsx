@@ -18,6 +18,7 @@ import EditRotation from './components/Rotation'
 import ColorSwatch from './components/ColorSwatch';
 import { RGBA } from './libs/useColor';
 import Header from './components/Header';
+import FilterList from './components/FilterList';
 
 const useFilterResults = (
 	defaultEnabled: boolean
@@ -240,15 +241,10 @@ function App() {
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
-					<select
-						className={styles.border}
-						value={font}
-						onChange={(e) => setFont(e.target.value)}
-					>
-						{fontList.map(font => (
-							<option key={font} value={font}>{font}</option>
-						))}
-					</select>
+					<FilterList
+						items={fontList}
+						onChange={setFont}
+						selection={font} />
 					<TreeNode
 						title="サイズ"
 						defaultOpen={true}
