@@ -37,10 +37,12 @@ const ColorSwatch = ({
 	colors = (makeColors(defaultTheme)),
 	onChange
 }:Props) => {
+	const options = useMemo(() => Object.keys(ColorScheme as ColorSchemeType), [ColorScheme])
+	const colorsCache = useMemo(() => options.reduce<{[name:string]:RGBA[]}>((ret, name)=>({...ret,[name]:makeColors(name)}), {}), [options])
 	const [name, setName] = useState(defaultTheme)
 	const handleChangeName = useCallback((name) => {
 		setName(name)
-		onChange(makeColors(name))
+		onChange(colorsCache[name])
 	}, [ColorScheme, calcColor])
 	const [pickerIndex, setPickerIndex] = useState(0)
 	const [isPickerOpen, setIsPickerOpen] = useState(false)
@@ -50,7 +52,22 @@ const ColorSwatch = ({
 		newColors[pickerIndex] = color.rgb
 		onChange(newColors)
 	}, [colors, pickerIndex,])
-	const options = useMemo(() => Object.keys(ColorScheme as ColorSchemeType), [ColorScheme])
+
+	const styleFn = useMemo(() => ({
+		option: (provided, state) => {
+			const name = state.data.label
+			const colors = colorsCache[name]
+			const length = colors.length
+			return {
+				...provided,
+				color: state.selectProps.menuColor,
+				background: `linear-gradient(to right, ${
+						colors.map(({r,g,b,a},i)=>`rgba(${r},${g},${b},${a}) ${i/length*100}% ${(i+1)/length*100}%`).join(',')
+				})`,
+				filter: `brightness(${state.isFocused ? '100%' : '80%'})`
+			}
+		},
+	}), [colorsCache])
 
 	return (<div>
 		<label>プリセットから選ぶ</label>
@@ -58,6 +75,7 @@ const ColorSwatch = ({
 			onChange={handleChangeName}
 			items={options}
 			selection={name}
+			styles={styleFn}
 		/>
 		<div className={`mt-2`}>
 			{colors.map((color, i) => (
