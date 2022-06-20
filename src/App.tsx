@@ -19,6 +19,9 @@ import ColorSwatch from './components/ColorSwatch';
 import { RGBA } from './libs/useColor';
 import Header from './components/Header';
 import FilterList from './components/FilterList';
+import MultiSlider from './components/MultiSlider'
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css';
 
 const useFilterResults = (
 	defaultEnabled: boolean
@@ -73,11 +76,11 @@ function App() {
 	const [font, setFont] = useState('sans-serif')
 	const fontList = useFontList(font)
 
-	const [sizeOffset, setSizeOffset] = useState(10)
-	const [sizeMult, setSizeMult] = useState(2)
-	const sizeMapFunction = useCallback((value: number) => {
-		return value * sizeMult + sizeOffset
-	}, [sizeOffset, sizeMult])
+	const [sizeFactors, setSizeFactors] = useState([0,1,1])
+	const [sizeLimits, setSizeLimits] = useState<number|number[]>([10,300])
+	const sizeMapFunction = useCallback((value: number) => 
+		Math.min(sizeLimits[1], Math.max(sizeLimits[0], [...sizeFactors].reverse().reduce((acc,factor,i)=>acc+Math.pow(value,i)*factor, 0)))
+	,[sizeFactors, sizeLimits])
 
 	const [colors, setColors] = useState<RGBA[]>()
 
@@ -252,31 +255,32 @@ function App() {
 						className={styles.editorItem}
 						titleClass={styles.heading4}
 					>
-						<div>
-							<label htmlFor='sizeOffset'>{`オフセット(${sizeOffset})`}</label>
-							<br />
-							<input
-								type='range'
-								min='0'
-								max='100'
-								value={sizeOffset}
-								onChange={(e) => setSizeOffset(parseInt(e.target.value))}
-								name='sizeOffset'
-							/>
-						</div>
-						<div>
-							<label htmlFor='sizeMult'>{`倍率(${sizeMult})`}</label>
-							<br />
-							<input
-								type='range'
-								min='1'
-								max='10'
-								step='0.01'
-								value={sizeMult}
-								onChange={(e) => setSizeMult(Number(e.target.value))}
-								name='sizeMult'
-							/>
-						</div>
+						<p>= Ax^2 + Bx + C (x: 出現回数)</p>
+						<MultiSlider
+							labels={['A','B','C'].map((v,i)=>`${v}(${sizeFactors[i]})`)}
+							value={sizeFactors}
+							onChange={setSizeFactors}
+							sliderProps={[{
+								min:-10,
+								max:10,
+								step:0.01
+							},{
+								min:-10,
+								max:10,
+								step:0.01
+							},{
+								min:-100,
+								max:100,
+								step:1
+							}]}
+						/>
+						<p>{`limit(${sizeLimits[0]}~${sizeLimits[1]})`}</p>
+						<Slider range
+							value={sizeLimits}
+							min={1}
+							max={500}
+							onChange={setSizeLimits}
+						/>
 					</TreeNode>
 					<TreeNode
 						title="色"
@@ -393,7 +397,7 @@ function App() {
 					words={words}
 					font={font}
 					colors={colors}
-					minFontSize={sizeOffset}
+					minFontSize={1}
 					valueMap={sizeMapFunction}
 					rotation={rotation}
 				/>

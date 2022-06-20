@@ -49,7 +49,6 @@ const MyWordcloud = ({
 			}
 			return acc
 		}, new Array<Datum>())
-		.map(([w,v])=> ([w, valueMap(v)]))
 	}, [words, autoUpdate, valueMap])
 	dataRef.current = data
 	const [isWordCloudSupported] = useWordCloud({
