@@ -9,7 +9,6 @@ import { WordLengthRangeFilter, WordFreqRangeFilter } from './components/WordRan
 import { WordDenyFilter } from './components/WordDenyFilter'
 import EditBackground from './components/EditBackground';
 import DownloadElement from './components/DownloadElement';
-import { useFontList } from './libs/FontList';
 import EditSize2d from './components/EditSize';
 import EditMask from './components/EditMask';
 import TreeNode from './components/TreeNode';
@@ -18,7 +17,7 @@ import EditRotation from './components/Rotation'
 import ColorSwatch from './components/ColorSwatch';
 import { RGBA } from './libs/useColor';
 import Header from './components/Header';
-import FilterList from './components/FilterList';
+import FontList from './components/FontList';
 import MultiSlider from './components/MultiSlider'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
@@ -74,7 +73,6 @@ function App() {
 	}, [tokens, filters.length.result, filters.freq.result, filters.class.result, filters.words.result])
 
 	const [font, setFont] = useState('sans-serif')
-	const fontList = useFontList(font)
 
 	const [sizeFactors, setSizeFactors] = useState([0,1,1])
 	const [sizeLimits, setSizeLimits] = useState<number|number[]>([10,300])
@@ -244,8 +242,7 @@ function App() {
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
-					<FilterList
-						items={fontList}
+					<FontList
 						onChange={setFont}
 						selection={font} />
 					<TreeNode
