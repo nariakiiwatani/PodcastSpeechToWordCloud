@@ -1,5 +1,28 @@
 import { useState, useCallback, useRef } from 'react'
 import path from 'path-browserify'
+import Iframe from 'react-iframe'
+
+type ModalProps = {
+	show: boolean,
+	className: string,
+	children: React.ReactNode,
+	onClick: ()=>void,
+}
+const Modal = ({
+	show,
+	className,
+	children,
+	onClick
+}:Partial<ModalProps>) => {
+	return (<>
+			<div
+				className={`${className} ${!show ? 'hidden':''}`}
+				onClick={onClick}
+			>
+				{children}
+			</div>
+	</>)
+}
 
 type Props = {}
 
@@ -36,6 +59,7 @@ const Header = ({}:Props) => {
 		licenseRef.current.append(wrap(theirs, 'pre', styles.their_license))
 		setShowLicense(true)
 	}, [])
+	const [showForm, setShowForm] = useState(false)
 
 	return (<>
 		<div className={`flex flex-row`}>
@@ -54,13 +78,30 @@ const Header = ({}:Props) => {
 				<span onClick={handleShowLicense} className={styles.link}>
 					License
 				</span>
+				<span onClick={e=>setShowForm(true)} className={styles.link}>
+					お問い合せ
+				</span>
+				<span className={styles.link}>
+					<a href="https://www.buymeacoffee.com/nariakiiwatani" target="_blank">
+						<img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style={{height: '28px',width: '101px'}} />
+					</a>
+				</span>
 			</p>
 		</div>
-		<div className={`${styles.modal} ${!showLicense ? 'hidden':''}`}
+		<Modal className={styles.modal}
+			show={showLicense}
 			onClick={() => setShowLicense(false)}>
-			<div ref={licenseRef} className={styles.license}>
-			</div>
-		</div>
+			<div ref={licenseRef} className={styles.license} />
+		</Modal>
+		<Modal className={styles.modal}
+			show={showForm}
+			onClick={() => setShowForm(false)}>
+				<Iframe url="https://docs.google.com/forms/d/e/1FAIpQLSe5vvuoQBKxKa07Bp2fZNQJ0lQqIgWg64MrfS4o7JjfqsBVsg/viewform?embedded=true"
+					width="640"
+					height="1735"
+					className={styles.form}
+				/>
+		</Modal>
 	</>)
 }
 export default Header
@@ -70,10 +111,10 @@ const styles = {
 	leading-tight text-2xl basis-1/4
 	`,
 	links: `
-	flex flex-row basis-1/4
+	flex flex-row basis-2/3
 	`,
 	link: `
-	mr-2
+	mr-4
 	last:mr-0
 	cursor-pointer
 	`,
@@ -100,6 +141,15 @@ const styles = {
 	`,
 	spacer: `
 	mt-16
+	`,
+	form: `
+	leading-tight
+	p-8
+	text-slate-200
+	min-w-[640px]
+	w-1/2
+	my-0
+	mx-auto
 	`,
 }
 
