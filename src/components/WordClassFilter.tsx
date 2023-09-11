@@ -44,7 +44,7 @@ export const WordClassFilter = (prop:{
 						onMouseLeave={() => showTooltip(false)}
 					>
 						<input type="checkbox"
-							checked={allowedClass.includes(className)}
+							checked={Object.keys(allowedClassMap).includes(className)?allowedClassMap[className]:true}
 							onChange={e => handleChecked(className, e.target.checked)}
 						/>
 						{`${className} (${words.length})`}
