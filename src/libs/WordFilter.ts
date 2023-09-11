@@ -16,9 +16,10 @@ const minmax = (value:number[], default_min:number, default_max:number=default_m
 
 const useRangeFilterImpl = (words:ScoredWord[], type: FilterType) => {
 	const bounds = useMemo(() => minmax(words.map(w=>w.score), 1), [words])
-	const rangeAtom = useMemo(() => atomWithStorage(`range-${type}`, bounds), [])
+	const rangeAtom = useMemo(() => atomWithStorage(`range-${type}`, undefined), [])
 	const [range, setRange] = useAtom(rangeAtom)
 	const validRange = useMemo(() => {
+		if(range === undefined) return bounds
 		return range.min > bounds.max || range.max < bounds.min ? bounds : range
 	}, [range, bounds])
 	const allowed = useMemo<boolean[]>(() => {

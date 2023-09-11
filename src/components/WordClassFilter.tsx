@@ -24,6 +24,15 @@ export const WordClassFilter = (prop:{
 	useEffect(() => {
 		onResult(allowed)
 	}, [allowed])
+	useEffect(() => {
+		setAllowedClassMap(prev => {
+			const ret = {...prev}
+			Array.from(classCounts.keys()).forEach(key => {
+				ret[key] = ret[key]??true
+			})
+			return ret
+		})
+	}, [classCounts])
 	const [tooltip, showTooltip] = useState(true)
 	return (<>
 		<div>
@@ -44,7 +53,7 @@ export const WordClassFilter = (prop:{
 						onMouseLeave={() => showTooltip(false)}
 					>
 						<input type="checkbox"
-							checked={Object.keys(allowedClassMap).includes(className)?allowedClassMap[className]:true}
+							checked={allowedClassMap[className]??true}
 							onChange={e => handleChecked(className, e.target.checked)}
 						/>
 						{`${className} (${words.length})`}
