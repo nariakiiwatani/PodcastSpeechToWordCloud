@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Word, ScoredWord, calcWordFreq } from './Words';
+import { useAtom } from 'jotai'
+import { atomWithStorage } from 'jotai/utils';
 
 export type FilterType = 'length' | 'freq' | 'class' | 'words'
 
@@ -12,17 +14,21 @@ const minmax = (value:number[], default_min:number, default_max:number=default_m
 	}
 }
 
-const useRangeFilterImpl = (words:ScoredWord[]) => {
+const useRangeFilterImpl = (words:ScoredWord[], type: FilterType) => {
 	const bounds = useMemo(() => minmax(words.map(w=>w.score), 1), [words])
-	const [range, setRange] = useState(bounds)
+	const rangeAtom = useMemo(() => atomWithStorage(`range-${type}`, bounds), [])
+	const [range, setRange] = useAtom(rangeAtom)
+	const validRange = useMemo(() => {
+		return range.min > bounds.max || range.max < bounds.min ? bounds : range
+	}, [range, bounds])
 	const allowed = useMemo<boolean[]>(() => {
 		return words.map((findWord:Word, index:number) => {
 			const found = words.find(({word,pos}) => {
 				return findWord.word === word && findWord.pos === pos
 			})
-			return found !== undefined && found.score >= range.min && found.score <= range.max
+			return found !== undefined && found.score >= validRange.min && found.score <= validRange.max
 		})
-	}, [words, range])
+	}, [words, validRange])
 	const scoreCounts = useMemo(() => {
 		const unique = new Map<number,Word[]>()
 		words.forEach(({word,pos,score}) => {
@@ -37,12 +43,13 @@ const useRangeFilterImpl = (words:ScoredWord[]) => {
 		})
 		return unique
 	}, [words])
+
 	
 	return {
 		scoreCounts,
 		allowed,
 		bounds,
-		range,
+		range: validRange,
 		setRange
 	}
 }
@@ -79,7 +86,7 @@ const calcScore = (words:Word[], type:FilterType):ScoredWord[] => {
 
 export const useRangeFilter = (words:Word[], type:FilterType) => {
 	const scored = useMemo(() => calcScore(words, type), [words])
-	return useRangeFilterImpl(scored)
+	return useRangeFilterImpl(scored, type)
 }
 
 export const useFreqFilter = (words:Word[]) => {
@@ -90,7 +97,7 @@ export const useLengthFilter = (words:Word[]) => {
 	return useRangeFilter(words, 'length')
 }
 
-export const useClassFilter = (words:Word[]) => {
+export const useClassFilter = (words:Word[], allowedClass: string[]) => {
 	const classCounts = useMemo(() => {
 		// count unique word classes
 		const unique = new Map<string,Word[]>()
@@ -106,16 +113,12 @@ export const useClassFilter = (words:Word[]) => {
 		})
 		return unique
 	}, [words])
-	const [allowedClass, setAllowedClass] = useState<string[]>(Array.from(classCounts.keys()))
 	const allClasses = useRef<Set<string>>()
 	useEffect(() => {
 		if(!allClasses.current) {
 			allClasses.current = new Set()
 		}
-		const newClasses = Array.from(classCounts.keys())
-		.filter(c=>!allClasses.current.has(c))
-		setAllowedClass([...allowedClass, ...newClasses])
-		newClasses.forEach(c=>allClasses.current.add(c))
+		Array.from(classCounts.keys()).forEach(c=>allClasses.current.add(c))
 	}, [classCounts])
 	const allowed = useMemo(() => {
 		return words.map((w:Word) => {
@@ -125,8 +128,6 @@ export const useClassFilter = (words:Word[]) => {
 	return {
 		classCounts,
 		allowed,
-		allowedClass,
-		setAllowedClass
 	}
 }
 

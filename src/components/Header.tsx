@@ -37,7 +37,7 @@ const Header = ({}:Props) => {
 		}
 		const mine = await (await fetch(path.resolve(BASE_DIR, 'LICENSE.txt'))).text()
 		const theirs = await (await fetch(path.resolve(BASE_DIR, 'bundle.js.LICENSE.txt'))).text()
-		console.info({mine, theirs})
+
 		const wrap = (text:string, tagName:string, className:string) => {
 			const element = document.createElement(tagName)
 			element.textContent = text

@@ -1,12 +1,23 @@
-import { useState, useMemo, useCallback } from 'react'
-import ColorScheme, { calcColor } from '../libs/js-colormaps'
+import { useState, useMemo, useCallback, useEffect } from 'react'
+import ColorSchemesFromLib, { calcColor } from '../libs/js-colormaps'
 import { ChromePicker as ColorPicker } from 'react-color'
-import { RGBA } from '../libs/useColor'
+import { RGB, RGBA } from '../libs/useColor'
 import FilterList from './FilterList';
+
+import { atom, useAtom, useAtomValue } from 'jotai'
+import { atomWithStorage, atomFamily } from 'jotai/utils'
+
+type InputColorScheme = {
+	[key: string]: {
+		interpolate: boolean,
+		colors: [number, number, number][]
+	}
+}
+const DefaultColorSchemes = ColorSchemesFromLib as InputColorScheme
 
 type ColorMap = {
 	interpolate: boolean,
-	colors: [[number, number, number]]
+	colors: RGBA[]
 }
 type ColorSchemeType = {
 	[key: string]: ColorMap
@@ -15,59 +26,98 @@ type ColorSchemeType = {
 function toCSSColor(color: RGBA, mul:number): string {
 	return `rgba(${color.r*mul}, ${color.g*mul}, ${color.b*mul}, ${color.a})`
 }
-function toRGB(color: [number, number, number], mul:number): RGBA {
+function toRGB(color: number[]|[number,number,number]|[number,number,number,number], mul:number): RGBA {
 	return { r: color[0]*mul, g: color[1]*mul, b: color[2]*mul, a:1 }
 }
 type Props = {
-	colors?: RGBA[]
 	onChange: (colors: RGBA[]) => void
 }
-const defaultTheme = 'spring'
-const makeColors = (name: string, resolution:number=8): RGBA[] => {
-	if(!(name in ColorScheme)) {
-		return []
-	}
-	const scheme = ColorScheme[name]
+const makeDefaultColors = (name: string) => {
+	return extractColors(DefaultColorSchemes[name])
+}
+const extractColors = (scheme: InputColorScheme[string], resolution: number = 8) => {
+	function interpolated(x, colors) {
+		let lo = Math.floor(x * (colors.length - 1));
+		let hi = Math.ceil(x * (colors.length - 1));
+		let r = Math.round((colors[lo][0] + colors[hi][0]) / 2 * 255);
+		let g = Math.round((colors[lo][1] + colors[hi][1]) / 2 * 255);
+		let b = Math.round((colors[lo][2] + colors[hi][2]) / 2 * 255);
+		return [r, g, b];
+	  }
+	  
 	return scheme.interpolate
-	? [...Array(resolution)].map((_,i)=>calcColor(i/(resolution-1), name)).map(c=>toRGB(c,1))
+	? [...Array(resolution)].map((_,i)=>interpolated(i/(resolution-1), scheme.colors)).map(c=>toRGB(c,1))
 	: scheme.colors.map(c=>toRGB(c,255))
 }
-
+const allColorSchemesAtom = atomWithStorage<ColorSchemeType>('color-schemes', (() => {
+	return Object.fromEntries(Object.entries(DefaultColorSchemes).map(([name, props]) => {
+		return [
+			name,
+			{
+				...props,
+				colors: extractColors(props)
+			}
+		]
+	}))
+})())
+const colorSchemesFamilyAtom = atomFamily((name: string) =>
+  atom(
+    (get) => get(allColorSchemesAtom)[name],
+    (get, set, arg:RGBA[]) => {
+		const prev = get(allColorSchemesAtom)
+		set(allColorSchemesAtom, {
+			...prev,
+			[name]: {
+				...prev[name],
+				colors: arg
+			}
+		})
+    }
+  )
+)
+const selectedThemeAtom = atomWithStorage('color-scheme-selected', 'spring')
 const ColorSwatch = ({
-	colors = (makeColors(defaultTheme)),
 	onChange
 }:Props) => {
-	const options = useMemo(() => Object.keys(ColorScheme as ColorSchemeType), [ColorScheme])
-	const colorsCache = useMemo(() => options.reduce<{[name:string]:RGBA[]}>((ret, name)=>({...ret,[name]:makeColors(name)}), {}), [options])
-	const [name, setName] = useState(defaultTheme)
-	const handleChangeName = useCallback((name) => {
-		setName(name)
-		onChange(colorsCache[name])
-	}, [ColorScheme, calcColor])
+	const [name, setName] = useAtom(selectedThemeAtom)
+	const [colorScheme, setColorSchemes] = useAtom(colorSchemesFamilyAtom(name))
+	const allColors = useAtomValue(allColorSchemesAtom)
+	const options = useMemo(() => Object.keys(DefaultColorSchemes), [DefaultColorSchemes])
 	const [pickerIndex, setPickerIndex] = useState(0)
 	const [isPickerOpen, setIsPickerOpen] = useState(false)
 
+	const handleChangeName = (name) => {
+		setName(name)
+	}
+
 	const handleChangeColor = useCallback((color) => {
-		const newColors = [...colors]
+		const newColors = [...colorScheme.colors]
 		newColors[pickerIndex] = color.rgb
-		onChange(newColors)
-	}, [colors, pickerIndex,])
+		setColorSchemes(newColors)
+	}, [colorScheme, pickerIndex])
+
+	const handleReset = () => {
+		setColorSchemes(makeDefaultColors(name))
+	}
+
+	useEffect(() => {
+		onChange(colorScheme.colors)
+	}, [colorScheme])
 
 	const styleFn = useMemo(() => ({
 		option: (provided, state) => {
-			const name = state.data.label
-			const colors = colorsCache[name]
+			const {colors} = allColors[state.data.value]
 			const length = colors.length
 			return {
 				...provided,
 				color: state.selectProps.menuColor,
 				background: `linear-gradient(to right, ${
-						colors.map(({r,g,b,a},i)=>`rgba(${r},${g},${b},${a}) ${i/length*100}% ${(i+1)/length*100}%`).join(',')
+					colors.map(({r,g,b,a},i)=>`rgba(${r},${g},${b},${a}) ${i/length*100}% ${(i+1)/length*100}%`).join(',')
 				})`,
 				filter: `brightness(${state.isFocused ? '100%' : '80%'})`
 			}
 		},
-	}), [colorsCache])
+	}), [name, allColors])
 
 	return (<div>
 		<label>プリセットから選ぶ</label>
@@ -78,7 +128,7 @@ const ColorSwatch = ({
 			styles={styleFn}
 		/>
 		<div className={`mt-2`}>
-			{colors.map((color, i) => (
+			{colorScheme.colors.map((color, i) => (
 				<div key={i} style={{
 					backgroundColor: toCSSColor(color, 1),
 					width: '20px',
@@ -98,13 +148,25 @@ const ColorSwatch = ({
 				/>
 			))}
 		</div>
-		{isPickerOpen && colors.length > pickerIndex && (
+		{isPickerOpen && colorScheme.colors.length > pickerIndex && (
 			<ColorPicker
-				color={colors[pickerIndex]}
+				color={colorScheme[pickerIndex]}
 				onChange={handleChangeColor}
 			/>
 		)}
+		<button
+			className={styles.resetButton}
+			onClick={handleReset}
+		>reset</button>
 	</div>)
 }
 
 export default ColorSwatch
+
+const styles = {
+	resetButton : `
+	border-2
+	border-slate-600
+	p-1
+	`,
+}

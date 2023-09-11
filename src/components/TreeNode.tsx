@@ -6,11 +6,11 @@ type Props = {
 	canToggleOpen?: boolean,
 	defaultOpen: boolean,
 	showSwitch: boolean,
-	defaultEnable?: boolean,
+	enabled?: boolean,
 	children: React.ReactNode,
 	className: string,
 	titleClass: string,
-	onChangeEnabled?: (enabled: boolean) => void,
+	setEnabled?: (enabled: boolean) => void,
 }
 
 const TreeNode = ({
@@ -18,22 +18,20 @@ const TreeNode = ({
 	canToggleOpen=true,
 	defaultOpen,
 	showSwitch,
-	defaultEnable=true,
+	enabled=true,
 	children,
 	className,
 	titleClass,
-	onChangeEnabled
+	setEnabled
 }:Props) => {
 	const [open, setOpen] = useState(defaultOpen)
-	const [enable, setEnable] = useState<boolean>(defaultEnable)
 	const toggle = useCallback(() => {
 		setOpen(!open)
 	}
 	, [open])
 	const handleEnable = useCallback((checked:boolean) => {
-		setEnable(checked)
-		onChangeEnabled && onChangeEnabled(checked)
-	}, [enable])
+		setEnabled&&setEnabled(checked)
+	}, [])
 	return (<>
 		<div className={className}>
 			<div>
@@ -48,14 +46,14 @@ const TreeNode = ({
 				<div className={styles.right}>
 					{showSwitch && <Switch
 						onChange={handleEnable}
-						checked={enable}
+						checked={enabled}
 						width={40}
 						height={20}
 					/>}
 				</div>
 			</div>
 			<div
-				className={`${!enable ? styles.disabled:''} ${!open ? styles.hidden:''}`}
+				className={`${!enabled ? styles.disabled:''} ${!open ? styles.hidden:''}`}
 			>
 				{children}
 			</div>

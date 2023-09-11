@@ -1,40 +1,53 @@
 import { useState, useCallback, useEffect } from 'react'
 import Slider from 'rc-slider'
 import { RotationSettings } from '../libs/WordCloud'
+import { atom, useAtom, useAtomValue } from 'jotai'
+import { atomWithStorage } from 'jotai/utils'
+
+const percent = v => Math.floor(v*100)
+const degree = v => Math.floor(v/Math.PI*180)
+const radian = v => v/180*Math.PI
+
+const ratioAtom = atomWithStorage('rotation-ratio', 0.5)
+const stepsAtom = atomWithStorage('rotation-steps', 2)
+const rangeAtom = atomWithStorage<[number,number]>('rotation-range', [radian(-90),radian(90)])
+const enableStepsAtom = atomWithStorage('rotation-step-enabled', true)
+
+const rotationSettingsAtom = atom((get)=>({
+	ratio: get(ratioAtom),
+	range: get(rangeAtom),
+	steps: get(enableStepsAtom)?get(stepsAtom):0
+}))
 
 type Prop = {
-	defaultValue: RotationSettings
 	onChange: (result:RotationSettings)=>void
 }
 
 const EditRotation = ({
-	defaultValue,
 	onChange
 }:Prop) => {
-	const [ratio, setRatio] = useState(defaultValue.ratio)
-	const [steps, setSteps] = useState(defaultValue.steps)
-	const [enableSteps, setEnableSteps] = useState(true)
-	const [range, setRange] = useState<[number, number]>(defaultValue.range)
+	const [ratio, setRatio] = useAtom(ratioAtom)
+	const [range, setRange] = useAtom(rangeAtom)
+	const [steps, setSteps] = useAtom(stepsAtom)
+	const [enableSteps, setEnableSteps] = useAtom(enableStepsAtom)
 	const handleChangeRatio = useCallback(v => {
 		setRatio(v)
 	}, [])
 	const handleChangeRange = useCallback(v => {
-		setRange([radian(v[0]), radian(v[1])])
+		setRange(v.map(radian))
 	}, [])
 	const handleChangeSteps = useCallback(e => {
-		setSteps(e.target.value)
+		const v = e.target.value
+		setSteps(v)
 	}, [])
 	const handleChangeEnableSteps = useCallback(e => {
-		setEnableSteps(e.target.checked)
+		const v = e.target.checked
+		setEnableSteps(v)
 	}, [])
-	const percent = v => Math.floor(v*100)
-	const degree = v => Math.floor(v/Math.PI*180)
-	const radian = v => v/180*Math.PI
+	const rotationSettings = useAtomValue(rotationSettingsAtom)
 	useEffect(() => {
-		onChange({
-			ratio, range, steps:enableSteps?steps:0
-		})
-	}, [ratio, steps, enableSteps, range, onChange])
+		onChange(rotationSettings)
+	}, [rotationSettings])
 	return (<>
 		<div>
 			<span>確率({`${percent(ratio)}%`})</span>

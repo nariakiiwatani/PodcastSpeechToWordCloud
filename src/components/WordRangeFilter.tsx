@@ -38,7 +38,6 @@ const RangeSlider = ({
 
 const WordRangeFilterImpl = (prop:{
 	filterName: string,
-	words: Word[],
 	scoreCounts: Map<number,Word[]>,
 	allowed: boolean[],
 	bounds: Range,
@@ -46,31 +45,10 @@ const WordRangeFilterImpl = (prop:{
 	setRange: (range:Range)=>void,
 	onResult: (allowed: boolean[])=>void
 }) => {
-	const {filterName, words, scoreCounts, allowed, bounds, range, setRange, onResult} = prop
-	const prev_bounds = useRef<Range>(bounds)
+	const {filterName, scoreCounts, allowed, bounds, range, setRange, onResult} = prop
+
 	useEffect(() => {
-		const bounds_diff = {
-			min: bounds.min - prev_bounds.current!.min,
-			max: bounds.max - prev_bounds.current!.max
-		}
-		const new_range = {
-			min: range.min + bounds_diff.min,
-			max: range.max + bounds_diff.max
-		}
-		if (new_range.min > new_range.max) {
-			[new_range.min, new_range.max] = [new_range.max, new_range.min]
-		}
-		[new_range.min, new_range.max] = [
-			Math.max(new_range.min, bounds.min),
-			Math.min(new_range.max, bounds.max)
-		]
-		setRange(new_range)
-		return () => {
-			prev_bounds.current = bounds
-		}
-	}, [bounds])
-	useEffect(() => {
-		prop.onResult(allowed)
+		onResult(allowed)
 	}, [allowed])
 	const [tooltip, showTooltip] = useState(true)
 	const marks = useMemo(() => {
@@ -120,7 +98,6 @@ export const WordRangeFilter = (prop:{
 	const { scoreCounts, allowed, bounds, range, setRange } = useRangeFilter(prop.words, prop.type)
 	return (<WordRangeFilterImpl
 		filterName={prop.type}
-		words={prop.words}
 		scoreCounts={scoreCounts}
 		allowed={allowed}
 		bounds={bounds}

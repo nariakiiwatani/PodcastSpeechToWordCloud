@@ -1,20 +1,25 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { Word } from '../libs/Words'
 import { useClassFilter } from '../libs/WordFilter'
 import ReactTooltip from 'react-tooltip'
+import { useAtom } from 'jotai'
+import { atomWithStorage } from 'jotai/utils';
+
+const allowedClassMapAtom = atomWithStorage<Record<string, boolean>>('class-filter-words-map', {})
 
 export const WordClassFilter = (prop:{
 	words: Word[],
 	onResult:(allowed: boolean[])=>void
 }) => {
 	const { words, onResult } = prop
-	const { classCounts, allowed, allowedClass, setAllowedClass } = useClassFilter(words)
+	const [allowedClassMap, setAllowedClassMap] = useAtom(allowedClassMapAtom)
+	const allowedClass = useMemo(() => Object.keys(allowedClassMap), [allowedClassMap])
+	const { classCounts, allowed } = useClassFilter(words, allowedClass)
 	const handleChecked = useCallback((className:string, checked:boolean) => {
-		setAllowedClass(prev =>
-			checked
-			? [...prev, className]
-			: prev.filter(c => c !== className)
-		)
+		setAllowedClassMap(prev => ({
+			...prev,
+			[className]: checked
+		}))
 	}, [])
 	useEffect(() => {
 		onResult(allowed)

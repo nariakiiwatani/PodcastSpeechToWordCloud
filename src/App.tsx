@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { Tokenizer } from './components/Tokenizer';
+import { Tokenizer, NoTokenizer } from './components/Tokenizer';
 import MyWordCloud from './components/MyWordcloud';
 import { RotationSettings } from './libs/WordCloud'
 import Speech2Text from './components/Speech2Text';
@@ -21,25 +21,40 @@ import FontList from './components/FontList';
 import MultiSlider from './components/MultiSlider'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
+import { useAtom } from 'jotai'
+import { atomWithStorage } from 'jotai/utils'
 
 const useFilterResults = (
-	defaultEnabled: boolean
+	[enabled, setEnabled]: [boolean, (v:boolean)=>void]
 ) => {
-	const [enabled, updateEnabled] = useState<boolean>(defaultEnabled);
 	const [result, updateResult] = useState<boolean[]>([]);
 	const passResult = useMemo(() => new Array<boolean>(result.length).fill(true), [result.length]);
 	const [resultCache, updateResultCache] = useState<boolean[]>(()=>[...passResult]);
-	const setEnabled = useCallback((enabled:boolean) => {
-		updateEnabled(enabled)
+	const handleEnabled = useCallback((enabled:boolean) => {
 		updateResult(enabled ? resultCache : passResult)
+		setEnabled(enabled)
 	}, [resultCache, passResult])
 	const setResult = useCallback((result:boolean[]) => {
 		updateResultCache(result)
 		if(enabled) updateResult(result)
 	}, [enabled])
 
-	return {enabled, result, setEnabled, setResult}
+	return {enabled, result, setEnabled:handleEnabled, setResult}
 }
+
+const useTokenizerAtom = atomWithStorage('use-tokenizer', true)
+const useFilterResultsAtom = {
+	length: atomWithStorage('filter-length', true),
+	freq: atomWithStorage('filter-freq', true),
+	class: atomWithStorage('filter-class', true),
+	words: atomWithStorage('filter-words', true),
+}
+const useFontNameAtom = atomWithStorage('font', 'sans-serif')
+
+const sizeFactorsAtom = atomWithStorage('size-factor', [0,1,1])
+const sizeLimitsAtom = atomWithStorage<number|number[]>('size-limits', [10,300])
+
+const outputImageSizeAtom = atomWithStorage('output-resolution', [3000,3000])
 
 function App() {
 	const [text, setText] = useState('')
@@ -47,15 +62,15 @@ function App() {
 		setText(prev=>[prev,text].join('\n'))
 	}, [setText])
 
-	const [useTokenizer, setUseTokenizer] = useState(true)
+	const [useTokenizer, setUseTokenizer] = useAtom(useTokenizerAtom)
 	const [tokens, setTokens] = useState<Word[]>([])
 	const [words, setWords] = useState<string[]>([])
 
 	const filters = {
-		length: useFilterResults(true),
-		freq: useFilterResults(true),
-		class: useFilterResults(true),
-		words: useFilterResults(true)
+		length: useFilterResults(useAtom(useFilterResultsAtom.length)),
+		freq: useFilterResults(useAtom(useFilterResultsAtom.freq)),
+		class: useFilterResults(useAtom(useFilterResultsAtom.class)),
+		words: useFilterResults(useAtom(useFilterResultsAtom.words))
 	}
 
 	useEffect(() => {
@@ -72,10 +87,11 @@ function App() {
 		setWords(tokens.filter((_, i) => filterAll[i]).map(token => token.word))
 	}, [tokens, filters.length.result, filters.freq.result, filters.class.result, filters.words.result])
 
-	const [font, setFont] = useState('sans-serif')
+	const [font, setFont] = useAtom(useFontNameAtom)
 
-	const [sizeFactors, setSizeFactors] = useState([0,1,1])
-	const [sizeLimits, setSizeLimits] = useState<number|number[]>([10,300])
+	const [sizeFactors, setSizeFactors] = useAtom(sizeFactorsAtom)
+	const [sizeLimits, setSizeLimits] = useAtom(sizeLimitsAtom)
+
 	const sizeMapFunction = useCallback((value: number) => 
 		Math.min(sizeLimits[1], Math.max(sizeLimits[0], [...sizeFactors].reverse().reduce((acc,factor,i)=>acc+Math.pow(value,i)*factor, 0)))
 	,[sizeFactors, sizeLimits])
@@ -91,7 +107,7 @@ function App() {
 	const captureElement = useRef<HTMLDivElement>(null)
 	const bgElement = useRef<HTMLDivElement>(null)
 
-	const [imageSize, setImageSize] = useState([512,512])
+	const [imageSize, setImageSize] = useAtom(outputImageSizeAtom)
 	const handleChangeImageSize = useCallback((width: number, height: number) => {
 		setImageSize([width, height])
 	}, [setImageSize])
@@ -170,18 +186,21 @@ function App() {
 					title="形態素解析"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={useTokenizer}
-					onChangeEnabled={setUseTokenizer}
+					enabled={useTokenizer}
+					setEnabled={setUseTokenizer}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
-					<Tokenizer text={text} onResult={setTokens} />
+					{useTokenizer
+						? <Tokenizer text={text} onResult={setTokens} />
+						: <NoTokenizer text={text} onResult={setTokens} />
+					}
 					<TreeNode
 						title="品詞でフィルタ"
 						defaultOpen={true}
 						showSwitch={true}
-						defaultEnable={true}
-						onChangeEnabled={filters.class.setEnabled}
+						enabled={filters.class.enabled}
+						setEnabled={filters.class.setEnabled}
 						className={styles.editorItem}
 						titleClass={styles.heading4}
 					>
@@ -195,8 +214,8 @@ function App() {
 					title="語の長さでフィルタ"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={true}
-					onChangeEnabled={filters.length.setEnabled}
+					enabled={filters.length.enabled}
+					setEnabled={filters.length.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
@@ -209,8 +228,8 @@ function App() {
 					title="出現回数でフィルタ"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={true}
-					onChangeEnabled={filters.freq.setEnabled}
+					enabled={filters.freq.enabled}
+					setEnabled={filters.freq.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
@@ -223,8 +242,8 @@ function App() {
 					title="除外語"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={true}
-					onChangeEnabled={filters.words.setEnabled}
+					enabled={filters.words.enabled}
+					setEnabled={filters.words.setEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
 				>
@@ -287,7 +306,6 @@ function App() {
 						titleClass={styles.heading4}
 					>
 						<ColorSwatch
-							colors={colors}
 							onChange={setColors}
 						/>
 					</TreeNode>
@@ -299,7 +317,6 @@ function App() {
 						titleClass={styles.heading4}
 					>
 						<EditRotation
-							defaultValue={rotation}
 							onChange={setRotation}
 						/>
 					</TreeNode>
@@ -308,10 +325,10 @@ function App() {
 					title="配置マスク"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={maskEnabled}
+					enabled={maskEnabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-					onChangeEnabled={setMaskEnabled}
+					setEnabled={setMaskEnabled}
 				>
 					<EditMask
 						onResult={setMask}
@@ -327,10 +344,10 @@ function App() {
 					title="背景"
 					defaultOpen={true}
 					showSwitch={true}
-					defaultEnable={background.enabled}
+					enabled={background.enabled}
 					className={styles.editorItem}
 					titleClass={styles.heading3}
-					onChangeEnabled={background.setEnabled}
+					setEnabled={background.setEnabled}
 				>
 					<EditBackground
 						onChange={handleBackgroundChange}
