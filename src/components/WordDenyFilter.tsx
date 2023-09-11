@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useDenyFilter } from '../libs/WordFilter';
 import { Word } from '../libs/Words'
 import { useAtom } from 'jotai'

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import Slider from 'rc-slider'
 import { RotationSettings } from '../libs/WordCloud'
 import { atom, useAtom, useAtomValue } from 'jotai'

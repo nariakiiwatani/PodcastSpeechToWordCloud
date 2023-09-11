@@ -1,6 +1,6 @@
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css';
-import { ReactNode, useMemo, useRef, useEffect, useState, useCallback } from 'react'
+import { ReactNode, useMemo, useEffect, useState, useCallback } from 'react'
 import ReactTooltip from 'react-tooltip'
 import { FilterType, useRangeFilter } from '../libs/WordFilter'
 import { Word } from '../libs/Words'

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import useColor, { Range, Color, isInRange } from '../libs/useColor';
+import { useState, useEffect, useRef, useMemo } from 'react'
+import { Range, Color, isInRange } from '../libs/useColor';
 import ColorSlider from './ColorSlider';
 
 class MyCanvas extends HTMLCanvasElement {

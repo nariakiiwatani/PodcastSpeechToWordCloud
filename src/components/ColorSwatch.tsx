@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import ColorSchemesFromLib, { calcColor } from '../libs/js-colormaps'
+import ColorSchemesFromLib from '../libs/js-colormaps'
 import { ChromePicker as ColorPicker } from 'react-color'
-import { RGB, RGBA } from '../libs/useColor'
+import { RGBA } from '../libs/useColor'
 import FilterList from './FilterList';
 
 import { atom, useAtom, useAtomValue } from 'jotai'
